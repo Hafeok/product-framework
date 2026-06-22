@@ -1,0 +1,12 @@
+# OS / editor
+.DS_Store
+Thumbs.db
+*.swp
+.idea/
+.vscode/
+
+# build / tooling output (none committed yet; reserved for reference tooling)
+node_modules/
+dist/
+build/
+*.log

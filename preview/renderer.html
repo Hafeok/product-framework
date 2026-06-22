@@ -1,0 +1,547 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>What → Preview · Generic AIO Renderer</title>
+<style>
+  /* Deliberately schematic. This is the GENERIC FALLBACK — it must look like a
+     blueprint, not a product, so it is visibly "what the contract carries"
+     before any design system is coupled. */
+  :root{
+    --ink:#0b1f33; --line:#7da3c4; --line-soft:#c7d9e8; --paper:#f3f7fb;
+    --paper-2:#e9f1f8; --accent:#1763b6; --accent-soft:#d6e6f6;
+    --warn:#9a5b00; --muted:#5b7790; --mono:"SF Mono",ui-monospace,"Cascadia Code",Menlo,Consolas,monospace;
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0; background:var(--paper); color:var(--ink);
+    font-family:var(--mono); font-size:14px; line-height:1.5;
+    -webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:1180px; margin:0 auto; padding:28px 22px 60px}
+  header.top{border-bottom:1.5px solid var(--ink); padding-bottom:14px; margin-bottom:22px}
+  header.top h1{font-size:15px; letter-spacing:.14em; text-transform:uppercase; margin:0 0 4px; font-weight:700}
+  header.top p{margin:0; color:var(--muted); font-size:12.5px; max-width:70ch}
+  .tag{display:inline-block; border:1px solid var(--line); border-radius:2px; padding:1px 7px; font-size:10.5px; letter-spacing:.1em; text-transform:uppercase; color:var(--accent); background:var(--accent-soft); margin-right:6px}
+
+  .layout{display:grid; grid-template-columns: 1fr 1.15fr; gap:26px; align-items:start}
+  @media (max-width:880px){ .layout{grid-template-columns:1fr} }
+
+  .col h2{font-size:11px; letter-spacing:.16em; text-transform:uppercase; color:var(--muted); margin:0 0 12px; font-weight:700; display:flex; align-items:center; gap:8px}
+  .col h2::after{content:""; flex:1; height:1px; background:var(--line-soft)}
+
+  /* ---- left: the contract (the data being consumed) ---- */
+  .contract{background:var(--paper-2); border:1px solid var(--line-soft); border-radius:4px; padding:0; overflow:hidden}
+  .contract .bar{display:flex; gap:0; border-bottom:1px solid var(--line-soft)}
+  .contract .bar button{flex:1; border:0; background:transparent; font-family:inherit; font-size:11px; letter-spacing:.08em; text-transform:uppercase; color:var(--muted); padding:9px 6px; cursor:pointer; border-right:1px solid var(--line-soft)}
+  .contract .bar button:last-child{border-right:0}
+  .contract .bar button[aria-selected="true"]{background:#fff; color:var(--accent); font-weight:700; box-shadow:inset 0 -2px 0 var(--accent)}
+  .contract pre{margin:0; padding:16px; font-size:12px; line-height:1.55; overflow:auto; max-height:560px; white-space:pre; tab-size:2}
+  .k{color:var(--accent)} .s{color:#117a4d} .n{color:#9a3b00} .c{color:var(--muted); font-style:italic}
+
+  /* ---- right: the rendered surface ---- */
+  .device{background:#fff; border:1.5px solid var(--ink); border-radius:10px; padding:0; overflow:hidden; max-width:430px; margin:0 auto; box-shadow:6px 6px 0 var(--accent-soft)}
+  .device .chrome{background:var(--ink); color:#fff; font-size:10.5px; letter-spacing:.1em; padding:6px 12px; display:flex; justify-content:space-between; align-items:center}
+  .device .chrome .ctx{opacity:.7}
+  .appnav{display:flex; gap:0; background:var(--paper-2); border-bottom:1.5px solid var(--ink)}
+  .appnav button{flex:1; border:0; border-right:1px solid var(--line-soft); background:transparent; font-family:inherit; font-size:11px; letter-spacing:.06em; padding:9px 4px; cursor:pointer; color:var(--muted); position:relative}
+  .appnav button:last-child{border-right:0}
+  .appnav button .typ{display:block; font-size:8px; letter-spacing:.12em; color:var(--line); margin-bottom:2px}
+  .appnav button[aria-current="true"]{background:#fff; color:var(--accent); font-weight:700; box-shadow:inset 0 -2px 0 var(--accent)}
+  .globalbar{display:flex; justify-content:flex-end; gap:8px; padding:8px 12px; border-top:1px dashed var(--line-soft); background:var(--paper-2)}
+  .globalbar button{border:1px solid var(--line); background:#fff; font-family:inherit; font-size:10.5px; padding:4px 10px; border-radius:3px; cursor:pointer; color:var(--muted)}
+  .globalbar button .typ{font-size:8px; letter-spacing:.1em; color:var(--line); margin-right:5px}
+  .screen{padding:18px 16px 22px; min-height:420px; position:relative}
+  .screen .stepname{font-size:10px; letter-spacing:.14em; text-transform:uppercase; color:var(--muted); border-bottom:1px dashed var(--line-soft); padding-bottom:8px; margin-bottom:14px; display:flex; justify-content:space-between}
+  .pageheading{font-size:18px; font-weight:700; margin:0 0 14px; position:relative}
+  .pageheading .ck, .state-box .ck{display:block; font-size:8.5px; letter-spacing:.1em; text-transform:uppercase; color:var(--accent); font-weight:400; margin-top:3px; opacity:.7}
+
+  /* generic AIO renderings — schematic on purpose */
+  .aio{margin:0 0 16px; position:relative}
+  .aio .lab{font-size:9.5px; letter-spacing:.12em; text-transform:uppercase; color:var(--accent); margin-bottom:5px; display:flex; gap:6px; align-items:center}
+  .aio .lab .typ{border:1px solid var(--line); border-radius:2px; padding:0 5px; background:var(--paper); color:var(--muted)}
+  .aio .role{color:var(--muted); font-size:11px; text-transform:none; letter-spacing:0; font-style:italic}
+
+  .gc-list{border:1.5px solid var(--line); border-radius:4px; overflow:hidden}
+  .gc-list .row{display:grid; grid-template-columns: 1fr auto auto; gap:10px; padding:9px 11px; border-bottom:1px dashed var(--line-soft); align-items:baseline}
+  .gc-list .row:last-child{border-bottom:0}
+  .gc-list .row .nm{font-weight:600}
+  .gc-list .row .qy,.gc-list .row .pr{color:var(--muted); font-size:12.5px}
+  .gc-list .head{background:var(--paper-2); font-size:9.5px; letter-spacing:.1em; text-transform:uppercase; color:var(--muted)}
+
+  .gc-value{border:1.5px solid var(--line); border-radius:4px; padding:11px 13px; display:flex; justify-content:space-between; align-items:baseline; background:var(--paper)}
+  .gc-value.primary{border-width:2px; border-color:var(--accent); background:var(--accent-soft)}
+  .gc-value .big{font-size:22px; font-weight:700}
+
+  .gc-button{width:100%; border:1.5px solid var(--accent); background:#fff; color:var(--accent); font-family:inherit; font-size:14px; letter-spacing:.04em; padding:12px; border-radius:4px; cursor:pointer; font-weight:700; transition:transform .04s}
+  .gc-button.primary{background:var(--accent); color:#fff}
+  .gc-button:active{transform:translateY(1px)}
+  .gc-button .typ{display:block; font-size:9px; letter-spacing:.12em; opacity:.65; font-weight:400; margin-bottom:2px}
+
+  .gc-select{border:1.5px solid var(--line); border-radius:4px; overflow:hidden}
+  .gc-select .opt{padding:10px 12px; border-bottom:1px dashed var(--line-soft); cursor:pointer; display:flex; gap:9px; align-items:center}
+  .gc-select .opt:last-child{border-bottom:0}
+  .gc-select .opt::before{content:"○"; color:var(--line)}
+  .gc-select .opt[aria-checked="true"]{background:var(--accent-soft)}
+  .gc-select .opt[aria-checked="true"]::before{content:"●"; color:var(--accent)}
+
+  .gc-entry{border:1.5px solid var(--line); border-radius:4px; padding:10px 12px; background:repeating-linear-gradient(90deg,transparent,transparent 6px,var(--paper-2) 6px,var(--paper-2) 7px); color:var(--muted)}
+
+  .wcag{margin-top:5px; display:flex; gap:4px; flex-wrap:wrap}
+  .wcag span{font-size:9px; letter-spacing:.04em; color:var(--muted); border:1px solid var(--line-soft); border-radius:2px; padding:0 4px}
+  .wcag span::before{content:"a11y "; color:var(--accent)}
+
+  /* state renderings */
+  .state-box{border:1.5px dashed var(--line); border-radius:4px; padding:26px 16px; text-align:center; color:var(--muted)}
+  .state-box.failed{border-color:var(--warn); color:var(--warn)}
+  .state-box .st{font-size:10px; letter-spacing:.14em; text-transform:uppercase; display:block; margin-bottom:7px; opacity:.8}
+  .state-box .msg{font-size:13.5px}
+  .spinner{display:inline-block; width:16px; height:16px; border:2px solid var(--line-soft); border-top-color:var(--accent); border-radius:50%; animation:spin .8s linear infinite; margin-bottom:8px}
+  @keyframes spin{to{transform:rotate(360deg)}}
+
+  /* controls strip */
+  .controls{display:flex; flex-wrap:wrap; gap:14px; margin:18px auto 0; max-width:430px; padding-top:14px; border-top:1px dashed var(--line-soft)}
+  .controls .grp{display:flex; flex-direction:column; gap:5px}
+  .controls .grp .glab{font-size:9.5px; letter-spacing:.12em; text-transform:uppercase; color:var(--muted)}
+  .controls .seg{display:flex; border:1px solid var(--line); border-radius:3px; overflow:hidden}
+  .controls .seg button{border:0; background:#fff; font-family:inherit; font-size:11px; padding:5px 9px; cursor:pointer; border-right:1px solid var(--line-soft); color:var(--muted)}
+  .controls .seg button:last-child{border-right:0}
+  .controls .seg button[aria-pressed="true"]{background:var(--accent); color:#fff}
+
+  .crumb{display:flex; gap:6px; align-items:center; font-size:11px; color:var(--muted); margin:0 auto 14px; max-width:430px; flex-wrap:wrap}
+  .crumb .flowlab{font-size:10px; letter-spacing:.1em; text-transform:uppercase; color:var(--accent); margin-right:2px}
+  .crumb .c{padding:2px 7px; border:1px solid var(--line-soft); border-radius:2px; cursor:pointer}
+  .crumb .c.here{background:var(--ink); color:#fff; border-color:var(--ink)}
+  .crumb .arr{color:var(--line)}
+
+  footer.note{margin-top:30px; padding-top:14px; border-top:1px solid var(--line-soft); color:var(--muted); font-size:11.5px; max-width:78ch}
+  footer.note code{background:var(--paper-2); padding:1px 4px; border-radius:2px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <h1>What → Preview</h1>
+    <p><span class="tag">Preview</span><span class="tag">Generic renderer</span>A generic Abstract-Interaction-Object renderer consuming a <strong>render contract</strong> — the derived projection of a What. No design system is coupled: every control is its schematic default. If this is legible and walkable, the contract carries enough for a design system to render against.</p>
+  </header>
+
+  <div class="layout">
+    <div class="col">
+      <h2>Render contract (consumed)</h2>
+      <div class="contract">
+        <div class="bar" role="tablist">
+          <button role="tab" aria-selected="true" data-view="screen">This screen</button>
+          <button role="tab" aria-selected="false" data-view="scenario">Scenario data</button>
+          <button role="tab" aria-selected="false" data-view="content">Content store</button>
+          <button role="tab" aria-selected="false" data-view="full">Full contract</button>
+        </div>
+        <pre id="json"></pre>
+      </div>
+    </div>
+
+    <div class="col">
+      <h2>Rendered surface</h2>
+      <div class="crumb" id="crumb"></div>
+      <div class="device">
+        <div class="chrome"><span>generic · no design system</span><span class="ctx" id="ctx"></span></div>
+        <nav class="appnav" id="appnav" aria-label="Primary"></nav>
+        <div class="screen" id="screen"></div>
+        <div class="globalbar" id="globalbar"></div>
+      </div>
+      <div class="controls">
+        <div class="grp">
+          <span class="glab">Projection state</span>
+          <div class="seg" id="stateseg"></div>
+        </div>
+        <div class="grp">
+          <span class="glab">Reset</span>
+          <div class="seg"><button id="reset" aria-pressed="false">↺ start over</button></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <footer class="note">
+    The renderer is a pure function of the contract: <code>render(contract) → surface</code>. AIO types map to canonical defaults
+    (<code>display-collection</code> → list, <code>display-value</code> → value block, <code>trigger-action</code> → button,
+    <code>single-select</code> → option group, <code>text-entry</code> → field). Data is the embedded Projector output for the scenario —
+    not placeholder text. Transitions make it clickable. Coupling a §11 manifest would swap these defaults for real components
+    without touching the contract.
+  </footer>
+</div>
+
+<script>
+/* ============================================================
+   THE RENDER CONTRACT — a derived projection of the checkout What.
+   (Hand-written here only because there is no live What-graph in
+   this artifact; in product-cli it is generated, never authored.)
+   ============================================================ */
+const CONTRACT = {
+  contract_version: "preview-0",
+  title: "Checkout",
+  context: { form_factor: "phone", modality: "touch" },
+  locale: "en",
+  content_store: {
+    "checkout.review.heading":   { role:"heading",       en:"Review your order" },
+    "cart.empty.message":        { role:"empty-message", en:"Nothing to check out yet — add something to get started." },
+    "cart.failed.message":       { role:"error-message", en:"Couldn't load your cart. Check your connection and retry." },
+    "checkout.payment.heading":  { role:"heading",       en:"How would you like to pay?" },
+    "browse.heading":            { role:"heading",       en:"Browse the shop" },
+    "orders.heading":            { role:"heading",       en:"Your orders" },
+    "confirm.heading":           { role:"heading",       en:"You're all set" }
+  },
+  start: "ui-review-cart",
+  root: {
+    destinations: [
+      { to:"ui-browse",      label:"Browse" },
+      { to:"ui-orders",      label:"Orders" },
+      { to:"ui-review-cart", label:"Cart" }
+    ],
+    global_actions: [ { issues:"cmd-sign-out", label:"Sign out" } ]
+  },
+  flows: [
+    { id:"flow-checkout", entry:"ui-review-cart", pages:["ui-review-cart","ui-choose-payment","ui-confirmation"] },
+    { id:"flow-browse",   entry:"ui-browse",      pages:["ui-browse"] },
+    { id:"flow-orders",   entry:"ui-orders",      pages:["ui-orders"] }
+  ],
+  screens: [
+    {
+      id: "ui-review-cart",
+      name: "Review cart",
+      intent: "Confirm what you're buying before paying",
+      content: { heading: "checkout.review.heading" },
+      projection: "rm-cart-summary",
+      state_space: ["present","empty","loading","failed"],
+      state_meanings: {
+        empty:   "Nothing to check out yet — add something to get started.",
+        loading: "Fetching your cart…",
+        failed:  "Couldn't load your cart. Check your connection and retry."
+      },
+      state_content: { empty: "cart.empty.message", failed: "cart.failed.message" },
+      elements: [
+        { aio:"display-collection", role:"the line items", binds:"items",
+          item_shape:[{field:"name",type:"string"},{field:"qty",type:"integer"},{field:"price",type:"money"}],
+          wcag:["1.3.1"] },
+        { aio:"display-value", role:"the total owed", binds:"total", value_type:"money",
+          emphasis:"primary", wcag:["1.3.1"] },
+        { aio:"trigger-action", role:"proceed to payment", issues:"cmd-begin-payment",
+          emphasis:"primary", transitions_to:"ui-choose-payment", wcag:["2.5.8","2.4.7"] }
+      ]
+    },
+    {
+      id: "ui-choose-payment",
+      name: "Choose payment",
+      intent: "Pick how to pay",
+      content: { heading: "checkout.payment.heading" },
+      projection: "rm-payment-options",
+      state_space: ["present","loading","failed"],
+      state_meanings: {
+        loading: "Loading payment methods…",
+        failed:  "Couldn't load payment methods. Retry."
+      },
+      elements: [
+        { aio:"single-select", role:"a payment method", binds:"methods",
+          option_field:"label", issues:"cmd-select-method", wcag:["1.3.1","4.1.2"] },
+        { aio:"trigger-action", role:"confirm and pay", issues:"cmd-authorize-payment",
+          emphasis:"primary", transitions_to:"ui-confirmation", wcag:["2.5.8","2.4.7"] }
+      ]
+    },
+    {
+      id: "ui-confirmation",
+      name: "Order placed",
+      intent: "Reassure the order succeeded and what happens next",
+      content: { heading: "confirm.heading" },
+      projection: "rm-order-confirmation",
+      state_space: ["present","loading"],
+      state_meanings: { loading: "Placing your order…" },
+      elements: [
+        { aio:"display-value", role:"the confirmation message", binds:"message", value_type:"string",
+          emphasis:"primary", wcag:["1.3.1"] },
+        { aio:"display-value", role:"the order number", binds:"order_no", value_type:"string", wcag:["1.3.1"] },
+        { aio:"trigger-action", role:"keep shopping", issues:"cmd-continue-shopping",
+          transitions_to:"ui-browse", wcag:["2.5.8"] }
+      ]
+    },
+    {
+      id: "ui-browse",
+      name: "Browse",
+      intent: "Find something to buy",
+      content: { heading: "browse.heading" },
+      projection: "rm-catalog",
+      state_space: ["present","loading","empty"],
+      state_meanings: { loading:"Loading products…", empty:"No products match." },
+      elements: [
+        { aio:"display-collection", role:"the catalog", binds:"products",
+          item_shape:[{field:"name",type:"string"},{field:"price",type:"money"}], wcag:["1.3.1"] },
+        { aio:"trigger-action", role:"go to cart", issues:"cmd-open-cart",
+          emphasis:"primary", transitions_to:"ui-review-cart", wcag:["2.5.8"] }
+      ]
+    },
+    {
+      id: "ui-orders",
+      name: "Orders",
+      intent: "See past orders",
+      content: { heading: "orders.heading" },
+      projection: "rm-order-history",
+      state_space: ["present","loading","empty"],
+      state_meanings: { loading:"Loading orders…", empty:"You haven't ordered yet." },
+      elements: [
+        { aio:"display-collection", role:"past orders", binds:"orders",
+          item_shape:[{field:"order_no",type:"string"},{field:"total",type:"money"}], wcag:["1.3.1"] }
+      ]
+    }
+  ],
+  /* the scenario: given/when/then; `projected` is the SIMULATED PROJECTOR OUTPUT,
+     embedded so the preview shows real data (§3.4). */
+  scenario: {
+    given: [
+      { event:"ev-item-added", data:{ name:"Coffee beans", qty:2, price:1800 } },
+      { event:"ev-item-added", data:{ name:"Filter papers", qty:1, price:600 } }
+    ],
+    projected: {
+      "rm-cart-summary": {
+        state:"present",
+        items:[ {name:"Coffee beans",qty:2,price:1800}, {name:"Filter papers",qty:1,price:600} ],
+        total:4200
+      },
+      "rm-payment-options": {
+        state:"present",
+        methods:[ {label:"Card ending 4242"}, {label:"Apple Pay"}, {label:"Pay on delivery"} ]
+      },
+      "rm-order-confirmation": {
+        state:"present",
+        message:"Order placed — thanks!",
+        order_no:"#A7F-3192"
+      },
+      "rm-catalog": {
+        state:"present",
+        products:[ {name:"Coffee beans",price:1800}, {name:"Filter papers",price:600}, {name:"Grinder",price:4500} ]
+      },
+      "rm-order-history": {
+        state:"present",
+        orders:[ {order_no:"#A7F-3192",total:4200}, {order_no:"#9C1-0088",total:1800} ]
+      }
+    }
+  }
+};
+
+/* domain-type formatting: a generic renderer draws each typed field by its type */
+function fmt(value, type){
+  if(type==="money") return "€" + (value/100).toFixed(2);
+  if(type==="integer") return "×" + value;
+  return String(value);
+}
+
+/* ============================================================
+   THE RENDERER — render(contract, state) → surface. Pure of any
+   design system: each AIO maps to a canonical schematic default.
+   ============================================================ */
+let current = CONTRACT.start;
+let forcedState = null;       // null = use scenario's projected state
+let selected = {};            // single-select choices per screen
+
+const screenEl = document.getElementById("screen");
+const crumbEl  = document.getElementById("crumb");
+const ctxEl    = document.getElementById("ctx");
+const stateSeg = document.getElementById("stateseg");
+const jsonEl   = document.getElementById("json");
+const appnavEl = document.getElementById("appnav");
+const globalbarEl = document.getElementById("globalbar");
+
+function flowOf(pageId){
+  const f = CONTRACT.flows.find(fl=>fl.pages.includes(pageId));
+  return f ? f.id : null;
+}
+
+/* resolve(content_key, locale) -> string  (§4.6). The content store is the
+   swappable provider of words; here it's embedded, keyed, locale-dimensioned. */
+function resolveContent(key){
+  const entry = CONTRACT.content_store[key];
+  if(!entry) return `⟨missing: ${key}⟩`;
+  const loc = CONTRACT.locale;
+  return entry[loc] != null ? entry[loc] : `⟨missing ${key}@${loc}⟩`;
+}
+
+ctxEl.textContent = CONTRACT.context.form_factor + " · " + CONTRACT.context.modality;
+
+function screenById(id){ return CONTRACT.screens.find(s=>s.id===id); }
+
+function aioLabel(el){
+  return `<div class="lab"><span class="typ">${el.aio}</span><span class="role">${el.role}</span></div>`;
+}
+function wcagTags(el){
+  if(!el.wcag||!el.wcag.length) return "";
+  return `<div class="wcag">${el.wcag.map(c=>`<span>${c}</span>`).join("")}</div>`;
+}
+
+function renderElement(el, data){
+  const lab = aioLabel(el);
+  switch(el.aio){
+    case "display-collection":{
+      const rows = (data[el.binds]||[]);
+      const cols = el.item_shape;
+      const head = `<div class="row head">${cols.map(c=>`<span>${c.field}</span>`).join("")}</div>`;
+      const body = rows.map(r=>`<div class="row">${cols.map((c,i)=>{
+        const cls = i===0?"nm": (c.type==="integer"?"qy":"pr");
+        return `<span class="${cls}">${fmt(r[c.field],c.type)}</span>`;
+      }).join("")}</div>`).join("");
+      return `<div class="aio">${lab}<div class="gc-list">${head}${body}</div>${wcagTags(el)}</div>`;
+    }
+    case "display-value":{
+      const v = fmt(data[el.binds], el.value_type);
+      const pr = el.emphasis==="primary"?" primary":"";
+      return `<div class="aio">${lab}<div class="gc-value${pr}"><span>${el.role}</span><span class="big">${v}</span></div>${wcagTags(el)}</div>`;
+    }
+    case "single-select":{
+      const opts = (data[el.binds]||[]);
+      const chosen = selected[current];
+      const body = opts.map((o,i)=>`<div class="opt" role="radio" aria-checked="${chosen===i}" data-idx="${i}">${o[el.option_field]}</div>`).join("");
+      return `<div class="aio">${lab}<div class="gc-select" data-select="1">${body}</div>${wcagTags(el)}</div>`;
+    }
+    case "text-entry":{
+      return `<div class="aio">${lab}<div class="gc-entry">${el.role}</div>${wcagTags(el)}</div>`;
+    }
+    case "trigger-action":{
+      const pr = el.emphasis==="primary"?" primary":"";
+      const to = el.transitions_to||"";
+      return `<div class="aio"><button class="gc-button${pr}" data-to="${to}" data-cmd="${el.issues}"><span class="typ">trigger-action · ${el.issues}</span>${el.role}</button>${wcagTags(el)}</div>`;
+    }
+    default:
+      return `<div class="aio">${lab}<div class="gc-entry">unrendered AIO: ${el.aio}</div></div>`;
+  }
+}
+
+function renderStateBox(screen, state, msg, ckey){
+  const tag = ckey ? `<span class="ck">content: ${ckey}</span>` : "";
+  if(state==="loading"){
+    return `<div class="state-box"><span class="st">${state}</span><span class="spinner"></span><div class="msg">${msg}</div>${tag}</div>`;
+  }
+  return `<div class="state-box ${state==='failed'?'failed':''}"><span class="st">${state}</span><div class="msg">${msg}</div>${tag}</div>`;
+}
+
+function activeState(screen){
+  // forcedState wins if it's in this screen's state space; else the scenario's projected state
+  if(forcedState && screen.state_space.includes(forcedState)) return forcedState;
+  const proj = CONTRACT.scenario.projected[screen.projection];
+  return (proj && proj.state) || "present";
+}
+
+function render(){
+  const screen = screenById(current);
+  const data = CONTRACT.scenario.projected[screen.projection] || {};
+  const state = activeState(screen);
+
+  // app navigation chrome = reified root destinations (§3.2.4).
+  // current destination is highlighted by which flow the current page belongs to.
+  const curFlow = flowOf(current);
+  appnavEl.innerHTML = CONTRACT.root.destinations.map(d=>{
+    const destFlow = flowOf(d.to);
+    const cur = destFlow && destFlow===curFlow ? 'aria-current="true"' : 'aria-current="false"';
+    return `<button ${cur} data-dest="${d.to}"><span class="typ">navigate</span>${d.label}</button>`;
+  }).join("");
+  globalbarEl.innerHTML = CONTRACT.root.global_actions.map(a=>
+    `<button data-global="${a.issues}"><span class="typ">trigger-action</span>${a.label}</button>`
+  ).join("");
+
+  // crumb / flow position — scoped to the current flow's pages (§3.2.4 subgraph)
+  const flow = CONTRACT.flows.find(f=>f.id===curFlow);
+  const crumbPages = flow ? flow.pages : [current];
+  crumbEl.innerHTML = `<span class="flowlab">${curFlow||"—"}:</span>` + crumbPages.map(pid=>{
+    const s = screenById(pid);
+    const here = pid===current?" here":"";
+    return `<span class="c${here}" data-go="${pid}">${s.name}</span>`;
+  }).reduce((a,b,i)=> a + (i? '<span class="arr">→</span>':'') + b, "");
+
+  // state segmented control (only the states THIS screen declares — constrained, §3.2.1)
+  stateSeg.innerHTML = screen.state_space.map(st=>{
+    const on = st===state ? 'aria-pressed="true"' : 'aria-pressed="false"';
+    return `<button ${on} data-state="${st}">${st}</button>`;
+  }).join("");
+
+  // step header
+  let html = `<div class="stepname"><span>${screen.name}</span><span>${screen.projection}</span></div>`;
+
+  // resolved heading content (§4.6) — a content key, resolved against the store
+  if(screen.content && screen.content.heading){
+    html += `<div class="pageheading"><span class="ck">content: ${screen.content.heading}</span>${resolveContent(screen.content.heading)}</div>`;
+  }
+
+  if(state!=="present"){
+    // state prose comes from a content key where declared, else the inline meaning
+    const ckey = screen.state_content && screen.state_content[state];
+    const msg = ckey ? resolveContent(ckey) : ((screen.state_meanings&&screen.state_meanings[state])||state);
+    html += renderStateBox(screen, state, msg, ckey);
+  } else {
+    html += screen.elements.map(el=>renderElement(el,data)).join("");
+  }
+  screenEl.innerHTML = html;
+
+  paintJSON();
+}
+
+/* ---- contract inspector (left pane) ---- */
+let jsonView = "screen";
+function syntax(obj){
+  let s = JSON.stringify(obj, null, 2);
+  s = s.replace(/&/g,"&amp;").replace(/</g,"&lt;");
+  s = s.replace(/"([^"]+)":/g, '"<span class="k">$1</span>":');
+  s = s.replace(/: "([^"]*)"/g, ': "<span class="s">$1</span>"');
+  s = s.replace(/: (\d+)/g, ': <span class="n">$1</span>');
+  return s;
+}
+function paintJSON(){
+  let obj;
+  if(jsonView==="screen") obj = screenById(current);
+  else if(jsonView==="scenario") obj = CONTRACT.scenario;
+  else if(jsonView==="content") obj = { locale: CONTRACT.locale, content_store: CONTRACT.content_store };
+  else obj = CONTRACT;
+  jsonEl.innerHTML = syntax(obj);
+}
+
+/* ---- events ---- */
+screenEl.addEventListener("click", e=>{
+  const btn = e.target.closest("[data-to]");
+  if(btn){
+    const to = btn.getAttribute("data-to");
+    if(to){ current = to; forcedState = null; render(); }
+    return;
+  }
+  const opt = e.target.closest(".opt[data-idx]");
+  if(opt){
+    selected[current] = parseInt(opt.getAttribute("data-idx"),10);
+    render();
+  }
+});
+crumbEl.addEventListener("click", e=>{
+  const c = e.target.closest("[data-go]");
+  if(c){ current = c.getAttribute("data-go"); forcedState=null; render(); }
+});
+appnavEl.addEventListener("click", e=>{
+  const b = e.target.closest("[data-dest]");
+  if(b){ current = b.getAttribute("data-dest"); forcedState=null; render(); }
+});
+globalbarEl.addEventListener("click", e=>{
+  const b = e.target.closest("[data-global]");
+  if(b){ /* global action fires a command; no transition declared, so just flash */ b.style.background="var(--accent-soft)"; setTimeout(()=>b.style.background="#fff",180); }
+});
+stateSeg.addEventListener("click", e=>{
+  const b = e.target.closest("[data-state]");
+  if(b){ forcedState = b.getAttribute("data-state"); render(); }
+});
+document.getElementById("reset").addEventListener("click", ()=>{
+  current = CONTRACT.start; forcedState=null; selected={}; render();
+});
+document.querySelectorAll(".bar [role=tab]").forEach(t=>{
+  t.addEventListener("click", ()=>{
+    document.querySelectorAll(".bar [role=tab]").forEach(x=>x.setAttribute("aria-selected","false"));
+    t.setAttribute("aria-selected","true");
+    jsonView = t.getAttribute("data-view");
+    paintJSON();
+  });
+});
+
+render();
+</script>
+</body>
+</html>
