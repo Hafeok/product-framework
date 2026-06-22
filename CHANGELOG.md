@@ -6,7 +6,7 @@ and the specification aims to follow [Semantic Versioning](https://semver.org/)
 adapted for a standard: the MAJOR version increments on a change that can
 invalidate a previously-conformant instance.
 
-## [Unreleased]
+## [1.3.0] — 2026-06-22
 
 ### Added
 - **§3.1 the domain model's data side, and data conformance as a continuous,
