@@ -5,8 +5,10 @@
 The Product Framework is a catalog-agnostic standard for describing a software
 product as three connected, machine-readable models:
 
-- **What** the system is and does — a domain model (structure) and an event
-  model (behaviour), owned by product and design;
+- **What** the system is and does — one or more **systems** (name, kind,
+  platform reach), a **domain model** (structure *and* data, with reference data
+  as part of the What), and an **event model** (behaviour), owned by product and
+  design;
 - **How** the code expresses the What — decisions, principles, patterns,
   contracts, and a repository layout model, owned by engineering;
 - **Delivery** — features and releases as partitions of the What, with "done"
@@ -63,7 +65,7 @@ be true; this is where to start (see [§13](docs/product-framework.md#13-data-co
 
 | Path | Contents |
 |---|---|
-| [`docs/product-framework.md`](docs/product-framework.md) | The specification (normative §§1–10; Preview §§11–12). |
+| [`docs/product-framework.md`](docs/product-framework.md) | The specification (normative §§1–10; Preview §§11–13). |
 | [`examples/checkout/`](examples/checkout/) | A worked example — a complete What carried down the whole chain, doubling as the spec's conformance demonstration. |
 | [`preview/`](preview/) | The render contract (Preview) and a working generic renderer that previews a What at wireframe fidelity. |
 | [`CONTRIBUTING.md`](CONTRIBUTING.md) | How to propose changes and file conformance reports. |
@@ -105,3 +107,11 @@ Dual-licensed by asset class:
 
 - **Specification text** — [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/) ([`LICENSE-docs`](LICENSE-docs))
 - **Shapes, schemas, code** — [Apache-2.0](https://www.apache.org/licenses/LICENSE-2.0) ([`LICENSE`](LICENSE))
+
+## Maintainer
+
+Maintained by **Emil ([@Hafeok](https://github.com/Hafeok))**. For conduct or
+security concerns, open an issue or contact the maintainer via GitHub.
+
+> Replace this line with your preferred public name and contact if different —
+> `CODE_OF_CONDUCT.md` and `SECURITY.md` point here for the maintainer reference.

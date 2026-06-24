@@ -8,6 +8,117 @@ invalidate a previously-conformant instance.
 
 ## [1.3.0] — 2026-06-22
 
+### Planned
+- Machine-readable RDF vocabulary for the typed nodes and links.
+- SHACL shapes implementing the conformance rules of §10.
+- Coupling experiment: a conforming design system (§11) and content store (§12)
+  realising the worked example end to end, to graduate both Preview profiles.
+
+## [1.4.0] — 2026-06-24
+
+A minor release: it **adds new normative surface** (it does not invalidate a
+1.3.0-conformant instance, but a previously-passing instance may now surface new
+findings — an unread aggregate field, a never-rejecting Decider — so it is a minor,
+not a patch). Completes the What with the pieces authored after the 1.3.0 freeze:
+a first-class **system** node, the **GUI/TUI interaction class** as the gating
+context dimension, a normative **authoring order**, the **Decider** business gloss,
+and the **aggregate-fields / state-justification / Decider-justification** trio that
+makes the model self-auditing on the behavioural axis. Also corrects the spec
+header (which lagged at 1.2 through the 1.3.0 freeze) and brings the README forward
+to the full §§1–13 scope.
+
+### Added
+- **§3.2.2 interaction class (GUI / TUI) as the gating context-of-use dimension.**
+  A new context dimension *senior* to the others: the interaction class
+  determines which sub-dimensions apply. **GUI** brings form factor
+  (phone/tablet/desktop) and pointer/touch modality into scope; **TUI** brings
+  terminal capabilities (grid size, colour depth, glyph set, key support) and
+  rules form factor out. The AIO vocabulary is unchanged across classes — a
+  `single-select` reifies to a touch control on a phone and an arrow-key list in a
+  terminal — so one What realises over substrates as different as a phone screen
+  and an SSH session. A system declares its target classes (§3.2.5); the design
+  system (§11) reifies the same AIOs to visual or terminal widgets per class.
+  Adds the `targets_class` edge (§9); §10.2 and §10.4 extended; the checkout
+  example notes a possible `acme-cli` TUI sibling.
+- **§4.5 unreifiable AIOs — honest substrate gaps.** A design system may declare a
+  (AIO, class) pair **unreifiable** (e.g. an image `display-collection` in a TUI):
+  a recorded, deliberate coverage gap with rationale, surfaced by the seam at
+  authoring time, never a silent pass — the same honesty as a *manual* WCAG tag or
+  the Polanyi floor. Adds the `unreifiable_in` edge (§9); the §11 manifest gains
+  `interaction_class` in `contexts_supported` and an `unreifiable` block.
+- **§2.1 Authoring order — the funnel as a process.** A normative description of
+  the *order* in which artifacts must come into existence, derived from the
+  dependency graph (§9) rather than invented as practice: system & domain
+  structure → reference data → events & flows → Deciders & Projectors → UI &
+  page graph → the How. **Verification is interleaved** (behavioural simulation
+  before realisation, layout conformance first, data conformance continuous), not
+  a final phase. The forward chain is a **cycle**: the *intent-reliance rate*
+  (under-specification) and the *data-divergence rate* (over-confidence,
+  post-deployment) send authoring back upstream — feedback re-enters the funnel
+  as a fresh forward pass. The framework is normative about this **order** while
+  staying silent about **practice** (cadence, ceremonies, who, when), preserving
+  the §7.3 model/practice line. Adds rule §10.14 (closing rule renumbered to 15).
+- **§3.2.5 The system** — what is being described. Adds a first-class What-side
+  **system** node (name, kind — app/website/service/CLI — purpose, and target
+  platform contexts) that owns its page graph and flows. A What may describe
+  **several systems sharing one domain model** (e.g. a customer app and an admin
+  website), each a distinct surface over the shared meaning with its own root,
+  flows, and platforms. **Platform (iOS/Android/web) is folded into context of
+  use** (§3.2.2) — "both" is two declared contexts the design system must reify
+  into — reusing existing machinery. **System identity is What; deployment
+  identity (domain name, bundle id, runtime) is How** (§4.2). §3.2.4's
+  "application root" generalised to a per-system root. Adds links `system_of` /
+  `targets_platform` / `roots_at` (§9); §8 mapping, §8.1 Level 1, and rule
+  §10.2 updated; the checkout example gains a system declaration.
+- **§3.3 Decider business gloss.** A business-facing gloss clarifying that a
+  Decider is where the business rules live (the rules are its rejections) *and*
+  says what results when a command is allowed (the emitted events) — capturing
+  both "what is permitted" and "what then happens". The name is kept (precise:
+  decide + reject + emit; established; fits the agent-noun pattern with Projector);
+  no rename.
+- **§3.4 the aggregate-fields principle.** An entity carries *exactly its
+  invariant-bearing state* (what its Deciders must read at decision time);
+  everything else a screen wants is a Projector's output, not a stored field. The
+  same value may exist twice — as enforced aggregate state and as a projected
+  field — for different reasons. §3.1's entities bullet gains the
+  entity-vs-value-object test (identity-over-time vs. attribute-defined).
+- **§3.4/§6.3 state justification — the reverse rule, as a checkable property.** A
+  field belongs on an aggregate *iff* some Decider reads it; an unread aggregate
+  field is a finding — **dead state**, or (more often) an **unmodelled invariant**,
+  making orphaned state a **detector of where the behavioural model is incomplete**,
+  the structural peer of the intent-reliance and data-divergence signals. The
+  mirror holds on the read side (a projected field no consumer uses is a finding),
+  making **state minimality a global property**. Adds the **state-justification**
+  verification kind (§6.3) and the `reads` edge (§9); rule §10.5 extended.
+- **§3.4 Decider justification — the mirror of state justification.** Every
+  Decider must *decide*: at least one reachable rejection (enforce ≥1 invariant).
+  A Decider that can never reject is a finding — trivial behaviour that should have
+  *no* Decider, or a missing invariant. Explicitly **not** "a Decider must have
+  fields": a creation Decider reads no prior state yet is valid because it rejects.
+  Adds the `rejects` edge (§9); folded into the state-justification kind; rule
+  §10.5 extended. State and Decider justification form a **pincer on unmodelled
+  invariants** — found from the state side and the behaviour side.
+- Checkout example: a system declaration (`acme-shop`), Order extended with
+  `paid_total`/`refund_total` as invariant-bearing fields, a worked **"one
+  invariant, many enforcement points"** passage (§3a) tracing `ORDER-REFUND-1` to
+  a Decider rejection, a simulation, a data-conformance shape, and a UI constraint,
+  and a worked state-justification note.
+
+### Changed
+- Spec header **Version 1.2 → 1.4.0**, correcting a version string that lagged the
+  body (the 1.3.0 freeze shipped the data-side content under a 1.2 header).
+- README brought forward to the full **§§1–13** scope: the What description now
+  names the system and the data side; the contents table reflects §§11–13 (three
+  Preview profiles) rather than §§11–12; a named maintainer added so the
+  references in `LICENSE-docs`, `CODE_OF_CONDUCT.md`, and `SECURITY.md` resolve.
+
+## [1.3.0] — 2026-06-21
+
+Makes the domain model's **data side** first-class and introduces **data
+conformance** — the framework's continuous, bidirectional, standalone-adoptable
+capability — alongside reference data as part of the What. All changes are
+additive; instances conformant to 1.2.0 remain conformant.
+
 ### Added
 - **§3.1 the domain model's data side, and data conformance as a continuous,
   bidirectional capability.** §3.1 (retitled "structure and data") distinguishes
@@ -30,12 +141,6 @@ invalidate a previously-conformant instance.
   trend, using none of the rest of the framework. Positioned as the lowest-
   commitment entry point (declaring a validatable structure is the hard part of
   Level 1, after which the rest is incremental).
-
-### Planned
-- Machine-readable RDF vocabulary for the typed nodes and links.
-- SHACL shapes implementing the conformance rules of §10.
-- Coupling experiment: a conforming design system (§11) and content store (§12)
-  realising the worked example end to end, to graduate both Preview profiles.
 
 ## [1.2.0] — 2026-06-18
 

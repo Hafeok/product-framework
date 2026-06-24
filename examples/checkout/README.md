@@ -12,6 +12,26 @@ It targets the four conformance levels (§8.1): **Described → Realised → Ver
 | `design-system.manifest.yaml` | a conforming design system (§11) |
 | `content-store.manifest.yaml` | a conforming content store (§12) |
 
+## 0. The system (§3.2.5)
+
+```
+system  acme-shop
+  name        "Acme Shop"
+  kind        application
+  purpose     "Let customers buy coffee supplies"
+  class       [ gui ]                  -- interaction class gates the rest (§3.2.2)
+  platforms   [ iOS, Android, web ]    -- in scope because class = gui
+
+(a sibling system could share this domain — e.g. `acme-admin`, kind=website,
+ class=[gui], platforms=[web,desktop] — or a `acme-cli`, class=[tui], whose
+ terminal context brings grid/colour-depth/key dimensions instead of form factor,
+ reifying the same single-select/trigger-action AIOs to terminal widgets.)
+```
+
+The checkout flow below belongs to `acme-shop` and roots at its page graph (§6).
+Deployment identity — `shop.acme.com`, bundle `com.acme.shop` — is **How** (§4.2),
+not shown here.
+
 ---
 
 ## 1. The What — domain (§3.1)
@@ -24,10 +44,21 @@ Cart (aggregate)
   invariant  CART-1: a Cart in `checking-out` has at least one LineItem
   invariant  CART-2: qty ≥ 1 for every LineItem
 
-Order (aggregate)
+Order (aggregate — an *entity*: identity persists while state changes)
   created-from  a Cart at payment authorization
-  has           order_no: OrderNo (value object), total: Money, placed_at: Instant
+  identity      order_no: OrderNo (value object, with checksum)
+  fields        placed_at: Instant
+                paid_total:   Money     -- invariant-bearing state (see ORDER-REFUND-1)
+                refund_total: Money     -- invariant-bearing state
+  invariant ORDER-REFUND-1:  refund_total ≤ paid_total
 ```
+
+`paid_total` and `refund_total` are **fields on the Order** — not because a screen shows
+them (a projection would do for that), but because the invariant `ORDER-REFUND-1` must
+read them *at decision time*, and a Decider sees only aggregate state (§3.3, §3.4). Order
+is an **entity**, not a value object: `#A7F-3192` is the same order before and after a
+refund, its attributes changing under a stable identity. (`OrderNo` and `Money` *are*
+value objects — defined wholly by their attributes, immutable.)
 
 `Money` is a value object (minor units, integer); `OrderNo` is a value object with a checksum (relevant in §4).
 
@@ -102,6 +133,59 @@ then   Accepted[ ev-payment-begun ]           ✓ complete: valid cart proceeds
 ```
 
 Command coverage holds: every command targeting Cart is handled. ✓
+
+### 3a. One invariant, many enforcement points
+
+`ORDER-REFUND-1` (refund ≤ paid) is declared **once** in the domain model (§1). From
+that single declaration the framework *derives* every place it is enforced — none of
+which re-states the rule:
+
+```
+declared once (§3.1):   invariant ORDER-REFUND-1:  refund_total ≤ paid_total
+
+→ Decider rejection (§3.3) — prospective, at the transition boundary:
+    decide(order, cmd-issue-refund{amount}):
+      reject ORDER-REFUND-1  if order.refund_total + amount > order.paid_total
+      else accept [ ev-refund-issued{amount} ]
+
+→ simulation (§3.3) — proven before any code:
+    given [paid 100, refunded 60]  when refund 50  then Rejected(ORDER-REFUND-1)  ✓
+    given [paid 100, refunded 60]  when refund 40  then Accepted[ev-refund-issued] ✓
+
+→ data-conformance shape (§3.1, §6.3) — retrospective, continuous, over state at rest:
+    OrderShape: refund_total ≤ paid_total
+    (catches an Order migrated in years ago that violates a rule added today)
+
+→ UI constraint (§3.2.1) — the refund numeric-entry's max is bound to the command
+    payload this invariant governs, so the field cannot even offer an invalid amount
+```
+
+Change the rule (allow a 5% goodwill margin) and you edit **one** invariant; every
+derived point updates from it, and anything that silently disagreed becomes a
+verification failure rather than a quiet drift. This is the difference from the usual
+"add a rule" — normally the rule is copied into a validator, a UI check, a migration,
+and a stale wiki page (four copies that diverge). Here there is **one declaration and N
+derivations**, and the derivations are checked to agree.
+
+**Two enforcement moments, one source of truth.** The Decider validates **prospectively
+at the boundary** (no transition creates invalid state) and the data-conformance shape
+validates **retrospectively and continuously** (state already at rest is audited) — both
+reading the *same* invariant. The Decider keeps the door clean going forward; data
+conformance audits the room and can even indict the Decider if invalid state keeps
+appearing through the supposedly-guarded door (§3.1). Aggregate-local invariants like
+this one can be guarded prospectively; a cross-aggregate rule ("no two Orders reserve the
+same serial item") cannot be a single Decider rejection — it is expressible only as a
+data-conformance shape over the wider graph, enforced continuously rather than guarded at
+a transition.
+
+**State justification (the reverse check).** `paid_total` and `refund_total` are
+justified fields because the Order's Decider *reads* them to evaluate `ORDER-REFUND-1`.
+Run the reverse check across the aggregate: a field no Decider reads would be a finding —
+either dead state to remove, or (more likely) an unmodelled invariant. If someone added
+`loyalty_tier` to Order and no `decide` consulted it, that is the model telling you a
+rule like "platinum customers get free returns" exists in the business but was never
+written as a Decider rejection (§3.4). Orphaned state points at the Deciders not yet
+written.
 
 ## 4. The What — the Projector (§3.4) — the part that matters
 
