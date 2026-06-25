@@ -75,9 +75,10 @@ be true; this is where to start (see [§13](docs/product-framework.md#13-data-co
 | [`LICENSE`](LICENSE) | Apache-2.0 — applies to shapes, schemas, and code. |
 | [`LICENSE-docs`](LICENSE-docs) | CC BY 4.0 — applies to the specification text. |
 
-> **Roadmap.** Machine-readable RDF vocabulary, SHACL shapes, and a worked
-> example instance are planned but not yet part of this cut. See the
-> [CHANGELOG](CHANGELOG.md) for the current scope.
+> **Roadmap.** Machine-readable RDF vocabulary and SHACL shapes are planned but
+> not yet part of this cut, and the three Preview profiles (§§11–13) await
+> reference adoptions to graduate to normative. See the [CHANGELOG](CHANGELOG.md)
+> for the current scope.
 
 ## Relationship to the Two Pillars
 
@@ -112,6 +113,3 @@ Dual-licensed by asset class:
 
 Maintained by **Emil ([@Hafeok](https://github.com/Hafeok))**. For conduct or
 security concerns, open an issue or contact the maintainer via GitHub.
-
-> Replace this line with your preferred public name and contact if different —
-> `CODE_OF_CONDUCT.md` and `SECURITY.md` point here for the maintainer reference.

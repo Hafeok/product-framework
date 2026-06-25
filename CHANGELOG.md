@@ -6,14 +6,6 @@ and the specification aims to follow [Semantic Versioning](https://semver.org/)
 adapted for a standard: the MAJOR version increments on a change that can
 invalidate a previously-conformant instance.
 
-## [1.3.0] — 2026-06-22
-
-### Planned
-- Machine-readable RDF vocabulary for the typed nodes and links.
-- SHACL shapes implementing the conformance rules of §10.
-- Coupling experiment: a conforming design system (§11) and content store (§12)
-  realising the worked example end to end, to graduate both Preview profiles.
-
 ## [1.4.0] — 2026-06-24
 
 A minor release: it **adds new normative surface** (it does not invalidate a
@@ -28,6 +20,26 @@ header (which lagged at 1.2 through the 1.3.0 freeze) and brings the README forw
 to the full §§1–13 scope.
 
 ### Added
+- **§3.2.0 Event-model building blocks and patterns** (adopting the Event Modeling
+  vocabulary). Names the four **building blocks** — **Trigger** (new: the thing
+  that issues a command, with source user / external / automated), Command, Event,
+  **View** — and the four **patterns** as named, checkable event-graph shapes:
+  **Command** (`Trigger→Command→Event(s)`), **View** (`Event(s)→View`),
+  **Automation** (`Event(s)→View→automated Trigger→Command→Event(s)`), and
+  **Translation** (cross-system). Patterns name the *topology*; the Decider (§3.3)
+  and Projector (§3.4) supply the *executable semantics* inside the Command and
+  View blocks (the Command pattern is a Decider invocation; the View pattern is the
+  Projector's no-foreign-events discipline). **Automation is the normative way to
+  model self-acting behaviour** — an automated Trigger watches a View (a to-do
+  list) and issues Commands carrying no business logic. **Translation is the
+  normative way sibling systems (§3.2.5) communicate** — read from exactly one
+  source system, write side may fan out — making cross-system coupling an explicit
+  directional edge, never a shared table. **Slicing** is identified with the
+  framework's work unit (§5) and feature-as-flow-slice (§7.1). Adds the
+  **pattern-conformance** verification kind (§6.3) and edges `triggers` /
+  `triggered_by` / `watches` / `translates_from` (§9); §3.2's primitives bullet and
+  rule §10.4 extended; the checkout example frames its commands/views as patterns
+  and notes an Automation and a Translation.
 - **§3.2.2 interaction class (GUI / TUI) as the gating context-of-use dimension.**
   A new context dimension *senior* to the others: the interaction class
   determines which sub-dimensions apply. **GUI** brings form factor
@@ -253,3 +265,15 @@ additive; instances conformant to 1.1.0 remain conformant.
 - License section replaced its placeholder with the committed dual scheme
   (CC BY 4.0 for text, Apache-2.0 for shapes/code).
 - `CONTRIBUTING.md` and `CHANGELOG.md` references now resolve to real files.
+
+---
+
+## Planned
+
+Not yet part of any cut; tracked here as the forward roadmap (not a pending release):
+
+- Machine-readable RDF vocabulary for the typed nodes and links.
+- SHACL shapes implementing the conformance rules of §10.
+- Reference adoptions to graduate the three Preview profiles (§§11–13) to normative:
+  a conforming design system (§11) and content store (§12) realising the worked
+  example end to end, and a continuous data-conformance deployment (§13).

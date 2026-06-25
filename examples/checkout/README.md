@@ -84,6 +84,9 @@ check, and it catches what the structure side alone never sees.
 
 ## 2. The What — events & commands (§3.2)
 
+Modelled as **Command patterns** (`Trigger → Command → Event(s)`, §3.2.0) — here the
+Trigger is a **user** via a UI step:
+
 ```
 commands → events                                    changes / targets
 ─────────────────────────────────────────────────────────────────────
@@ -92,18 +95,30 @@ cmd-begin-payment   → ev-payment-begun               targets Cart  (guards CAR
 cmd-authorize-pay   → ev-payment-authorized          targets Cart
                     | ev-payment-declined
 cmd-place-order     → ev-order-placed                targets Order, changes Order
+cmd-issue-refund    → ev-refund-issued               targets Order  (guards ORDER-REFUND-1)
 ```
 
-Read models (`projects`), **with declared state spaces** (§3.2):
+Read models (`projects`) are **View patterns** (`Event(s) → View`), **with declared
+state spaces** (§3.2):
 
 ```
 rm-cart-summary        projects Cart        states: present, empty, loading, failed
 rm-payment-options     projects (config)    states: present, loading, failed
-rm-order-confirmation  projects Order       states: present, loading
+rm-order-confirmation  projects Order        states: present, loading
 ```
 
 `rm-cart-summary` is the interesting one: it is **not** a CRUD view — its `total`
 is a fold over the line items, so it needs a real Projector (§4).
+
+**Automation and Translation** (§3.2.0), for completeness: auto-cancelling unpaid
+orders is an **Automation pattern** — a `rm-stale-orders` View (a to-do list of orders
+begun-but-unpaid past a deadline) watched by an automated Trigger that issues
+`cmd-cancel-order` per row (observe then act; the cancel Decider holds the rules, the
+trigger holds none). Telling a sibling `acme-fulfilment` system an order shipped is a
+**Translation pattern** — an automated Trigger reads a View over `acme-shop`'s
+`ev-order-placed` events (one source system) and issues a Command into
+`acme-fulfilment`, producing *its* events. That is the only sanctioned cross-system
+channel (§3.2.5).
 
 ## 3. The What — the Decider (§3.3)
 
