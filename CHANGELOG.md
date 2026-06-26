@@ -14,6 +14,20 @@ clause) but does not invalidate a 1.4.0-conformant instance — it gives instanc
 boundary they may now target, and a non-normative guide for day-to-day use.
 
 ### Added
+- **Concrete Build-seam schemas — `preview/build-seam/`.** §5.1 described the seam
+  in prose; an execution-framework author could not write an interoperable
+  implementation from prose alone (two authors would invent different field names).
+  The framework now provides a **normative JSON Schema for each message** —
+  `workunit.schema.json` and `verdictevent.schema.json` — plus a worked pair
+  (`example.md`). Each schema is a **universal envelope** (the named, typed fields
+  every conforming executor must understand — `unit_ref`, `bundle_hash`, the SPMC
+  `bundle`, `acceptance_class`; and on the verdict `event_id`, `emitted_at`, echoed
+  identity, the `verdict` enum pinned to §6.2, optional `next_consequence`) plus
+  **exactly one opaque `executor_extension` slot** where stack-specific structure
+  (capability tiers, escalation ladders, sealed interior DAGs, per-cell results)
+  lives, unread and unmandated by the framework. Strip the slot and the messages
+  remain complete and reconcilable — the contract lives in the envelope. §5.1 now
+  references the schemas; both examples validate, including with the slot removed.
 - **§5 SPMC bundle definition.** SPMC (Schema, Prompt, Model, Context) was
   previously named only in the §8 Two Pillars mapping, as a bare acronym with no
   gloss and no pointer — unresolvable for a reader who doesn't know the parent

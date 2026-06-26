@@ -68,7 +68,7 @@ be true; this is where to start (see [§13](docs/product-framework.md#13-data-co
 | [`docs/product-framework.md`](docs/product-framework.md) | The specification (normative §§1–10; Preview §§11–13). |
 | [`GUIDE.md`](GUIDE.md) | A non-normative developer workflow — the everyday Intake → What → How → Build loop. |
 | [`examples/checkout/`](examples/checkout/) | A worked example — a complete What carried down the whole chain, doubling as the spec's conformance demonstration. |
-| [`preview/`](preview/) | The render contract (Preview) and a working generic renderer that previews a What at wireframe fidelity. |
+| [`preview/`](preview/) | The render contract (Preview), a working generic renderer, and the **Build-seam schemas** (`build-seam/` — normative JSON Schema for the WorkUnit and VerdictEvent messages an execution framework must support, plus a worked pair). |
 | [`CONTRIBUTING.md`](CONTRIBUTING.md) | How to propose changes and file conformance reports. |
 | [`CODE_OF_CONDUCT.md`](CODE_OF_CONDUCT.md) | Contributor Covenant 2.1. |
 | [`SECURITY.md`](SECURITY.md) | How to report a concern. |
