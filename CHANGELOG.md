@@ -14,6 +14,18 @@ clause) but does not invalidate a 1.4.0-conformant instance — it gives instanc
 boundary they may now target, and a non-normative guide for day-to-day use.
 
 ### Added
+- **§5 SPMC bundle definition.** SPMC (Schema, Prompt, Model, Context) was
+  previously named only in the §8 Two Pillars mapping, as a bare acronym with no
+  gloss and no pointer — unresolvable for a reader who doesn't know the parent
+  standard. §5 now states that a **work unit *is* an SPMC bundle** and names the
+  four axes in this framework's own terms: **Schema** (the output shape + acceptance
+  criteria), **Prompt** (the bounded transformation), **Model** (the capability an
+  executor matches at the Build seam, §5.1), **Context** (the frozen resolved input
+  the reproducibility guarantee rests on). These name structure §5/§5.1 already
+  relied on; they are not new requirements. §8's row gains a "defined by the parent
+  Two Pillars framework; this is the mapping, not the definition" pointer, and
+  §5.1 ties its "frozen bundle" to the SPMC structure. The framework now
+  *instantiates* SPMC without *redefining* it.
 - **§5.1 The Build seam — the work-unit emission contract.** Promotes the work
   unit from an internal concept to the framework's **third verified seam** (peer to
   application↔runtime §4.2 and screen↔UI-step §4.5): the boundary where
