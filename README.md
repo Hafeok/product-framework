@@ -87,7 +87,9 @@ The Product Framework is a conformant instantiation of the **Two Pillars
 Specification Framework**: every construct maps to a named Two Pillars concept
 (see [§8 of the spec](docs/product-framework.md#8-conformance-to-the-two-pillars)).
 The Two Pillars foundation defines the standard; this framework is one
-opinionated way to satisfy it for software.
+opinionated way to satisfy it for software. The full, line-by-line conformance
+claim against the foundation's Pillar One checklist — including honestly declared
+partial coverage — is in [`CONFORMANCE.md`](CONFORMANCE.md).
 
 ## Conformance at a glance
 
