@@ -66,6 +66,7 @@ be true; this is where to start (see [§13](docs/product-framework.md#13-data-co
 | Path | Contents |
 |---|---|
 | [`docs/product-framework.md`](docs/product-framework.md) | The specification (normative §§1–10; Preview §§11–13). |
+| [`GUIDE.md`](GUIDE.md) | A non-normative developer workflow — the everyday Intake → What → How → Build loop. |
 | [`examples/checkout/`](examples/checkout/) | A worked example — a complete What carried down the whole chain, doubling as the spec's conformance demonstration. |
 | [`preview/`](preview/) | The render contract (Preview) and a working generic renderer that previews a What at wireframe fidelity. |
 | [`CONTRIBUTING.md`](CONTRIBUTING.md) | How to propose changes and file conformance reports. |

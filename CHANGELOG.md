@@ -6,6 +6,39 @@ and the specification aims to follow [Semantic Versioning](https://semver.org/)
 adapted for a standard: the MAJOR version increments on a change that can
 invalidate a previously-conformant instance.
 
+## [1.5.0] — 2026-06-26
+
+A minor release adding the framework's **execution boundary** and a practical
+developer workflow. It adds new normative surface (a new seam contract and rule
+clause) but does not invalidate a 1.4.0-conformant instance — it gives instances a
+boundary they may now target, and a non-normative guide for day-to-day use.
+
+### Added
+- **§5.1 The Build seam — the work-unit emission contract.** Promotes the work
+  unit from an internal concept to the framework's **third verified seam** (peer to
+  application↔runtime §4.2 and screen↔UI-step §4.5): the boundary where
+  specification ends and execution begins. The framework fixes the *contract* that
+  crosses it — an emitted unit travelling **by value with a content-hash identity**,
+  and a **self-describing verdict event** returning (the producer holding no
+  knowledge of any consumer; the freeze is the decoupling) — and fixes **nothing**
+  on the far side (scheduling, batching, how realisation is produced, event-stream
+  transport are the executor's concern, out of scope). This makes the execution
+  pillar **pluggable**: any executor honouring the seam can consume the framework's
+  output, and either pillar is swappable. Anchored in §8 as the **Two Pillars
+  seam** (the boundary between the specification pillar — this framework — and any
+  execution pillar); rule §10.8 extended; the GUIDE's Build stage notes that Build
+  runs *across* the seam. Catalog-agnostic: states the socket, never a particular
+  executor.
+- **`GUIDE.md` — a non-normative developer workflow.** Turns the authoring order
+  (§2.1) into the everyday loop a developer runs when a feature arrives:
+  **Intake → What → How → Build**, each stage with one guiding question, concrete
+  steps, and an exit criterion, plus the feedback cycle (intent-reliance,
+  state/Decider justification, data-divergence sending work upstream). Adds a
+  lightweight **Intake** preamble for the "before the What" step — locating an
+  informal request on the graph and extracting a one-sentence intent. Adds no
+  conformance rules (practice stays out of the spec, §7.3); §2.1 gains a
+  non-normative pointer to it, and the README lists it.
+
 ## [1.4.0] — 2026-06-24
 
 A minor release: it **adds new normative surface** (it does not invalidate a
