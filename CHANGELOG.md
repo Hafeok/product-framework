@@ -6,14 +6,88 @@ and the specification aims to follow [Semantic Versioning](https://semver.org/)
 adapted for a standard: the MAJOR version increments on a change that can
 invalidate a previously-conformant instance.
 
-## [1.5.0] — 2026-06-26
+## [1.6.0] — 2026-06-29
 
-A minor release adding the framework's **execution boundary** and a practical
-developer workflow. It adds new normative surface (a new seam contract and rule
-clause) but does not invalidate a 1.4.0-conformant instance — it gives instances a
-boundary they may now target, and a non-normative guide for day-to-day use.
+A minor release adding the framework's **execution boundary**, its **temporal
+axis**, **non-functional demands**, and a practical developer workflow — the
+batch built after the 1.5.0 cut. It adds new normative surface but does not
+invalidate a prior-conformant instance: it gives instances new boundaries and
+checks they may target, plus non-normative guidance for day-to-day use.
 
 ### Added
+- **§3.0.1 Journeys — flows that span systems.** Adds a product-level **journey**: a
+  declared, *derived* composition of single-system flows linked at crossings, where
+  **every crossing is a Translation** (§3.2.0). A business process that spans systems
+  (a customer orders in the shop, staff fulfil in the admin tool) was previously two
+  disconnected per-system flows with no end-to-end view; a journey makes that path
+  first-class **without re-coupling the systems** — it owns nothing, references flows
+  and Translations that already exist, and adds visibility, not behaviour. Because the
+  only cross-system link is the sanctioned event-driven Translation channel, systems
+  stay independent (the shop still knows nothing of the admin tool's internals), and
+  the framework's **value-anchoring** and **blast-radius** now extend *across*
+  systems — "what is the full footprint of order-to-fulfilment?" becomes one
+  traversal. Adds the **journey conformance** check (every crossing is a Translation,
+  or it's a finding; §6.3), edges `journey_of` / `composes_flow` / `crosses_via`
+  (§9), rule §10.2 extended, and a worked journey in the example.
+- **§3.0 The product and its boundary — a new top-level concept.** Introduces the
+  **product** as the root of the What: it **owns one or more domains** and **one or
+  more systems**, and a **system references whole domains** rather than owning them,
+  so domain concepts are shared across systems by being owned one level up. Resolves
+  an asymmetry where multi-system support existed (§3.2.5) but nothing owned the
+  sharing. The dividing line is made normative: **the domain owns meaning and rules**
+  (entities, structure, data, invariants, *and* behaviour — events, Deciders,
+  Projectors), **a system owns surface and journey** (page graph, flows, UI, target
+  platforms/classes), tested by *if two systems would disagree it is system-level, if
+  they must agree it is domain-level*. Consequence: systems sharing a domain share its
+  **rules**, not just its vocabulary — the same Deciders, invariants, and events,
+  authored once. A flow now *arranges* domain behaviour into a journey (referencing
+  its commands/events) rather than containing it. §3.1 reframed as "structure, data,
+  **and behaviour**, owned by the product, referenced by systems"; §3.2.5 reframed
+  from "what is described" to "a surface over domains"; product-wide concerns
+  (direction §7.3, product-level quality demands) now sit on the product, per-system
+  ones on the system. §2.1 authoring order gains the product/domains as step 1 and
+  splits systems-and-flows (step 4) from the domain behaviour they arrange (step 3).
+  Adds edges `owns_domain` / `owns_system` / `references_domain` (§9); rule §10.2
+  rewritten; §8 What row and the worked example updated (the example now declares an
+  `acme` product owning `Ordering`+`Catalog` and two systems — `acme-shop` and
+  `acme-admin` — that reference the same domains and share the refund rule).
+  Backward-compatible: a single-product, single-system instance is unchanged in
+  meaning.
+- **§7.3 Versions and direction — where the product is going.** Adds the *time
+  axis* the framework lacked (everything prior described the system *as it is*).
+  Three connected, derived ideas: (1) the **What and How carry independent semantic
+  versions** that reference each other — a How declares which What-version it
+  realises; What-major = behaviour change, What-minor = additive slice, What-patch =
+  clarification; How-major = architecture change, How-minor/patch = same What
+  realised differently — and each **bump is derivable from what the graph diff
+  touched**, not guessed. (2) A **target version is a declared future partition of
+  feature-slices** (some not yet realised) — never roadmap prose; a goal that
+  can't be written as a named set of slices isn't specified yet. (3) **Direction
+  is the computed gap** — `distance(target) = unrealised slices in its partition` —
+  so the roadmap is a *query over the graph*, not a document that drifts; progress
+  closes itself as slices pass their verifications. Applies the
+  reproducibility→measurement chain (§1) to teleology. Adds edges `versioned_as` /
+  `realises_version` / `targets_version` / `in_target` (§9); rule §10.11 extended;
+  former §7.3 (Model, not practice) renumbered **§7.4**; the checkout example
+  declares What/How versions and a worked `What 2.0` target with its computed gap.
+- **§3.6 Quality demands — non-functional requirements, made checkable.** Admits
+  performance/capacity/availability/security/residency demands on the framework's
+  terms: **never prose** (an unverifiable "must support 10,000 users" is debt, like
+  un-modelled intent), always one of exactly **two kinds** distinguished by *how
+  they are checked*. **Runtime bounds** (latency, throughput, capacity, uptime) are
+  the **data-conformance pattern pointed at operational telemetry** — a declared
+  bound measured continuously, with the same bidirectional reading (a breach means
+  the system underperforms *or* the bound was unrealistic) and a divergence signal;
+  a new **runtime-bound conformance** verification kind (§6.3). **Architectural
+  constraints** (data residency, security posture, fault-tolerance topology) bind
+  to the **How** (§4) and are checked at **build time** against the architecture,
+  never observed after the fact. Demands are **located, not listed**: system-wide
+  ones attach to the system node (§3.2.5), scoped ones to the flow/step/Decider they
+  bound. The honest test: if production telemetry can confirm it, it is a runtime
+  bound; if only inspecting the build can, it is an architectural constraint; if
+  neither, it is not specified yet. Adds edges `bounded_by` / `measured_by` /
+  `constrains` (§9); rule §10.3 and the §8 What row extended; the checkout example
+  gains system-wide and flow-scoped demands.
 - **Concrete Build-seam schemas — `preview/build-seam/`.** §5.1 described the seam
   in prose; an execution-framework author could not write an interoperable
   implementation from prose alone (two authors would invent different field names).

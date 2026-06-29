@@ -12,21 +12,71 @@ It targets the four conformance levels (§8.1): **Described → Realised → Ver
 | `design-system.manifest.yaml` | a conforming design system (§11) |
 | `content-store.manifest.yaml` | a conforming content store (§12) |
 
-## 0. The system (§3.2.5)
+## 0. The product, domains, and system (§3.0, §3.2.5)
 
 ```
+product  acme
+  name        "Acme"
+  purpose     "Sell coffee supplies and run the business behind it"
+  owns-domains [ Ordering, Catalog ]
+  owns-systems [ acme-shop, acme-admin ]
+  direction   target What 2.0   (product-wide, §7.3)
+  quality     data_residency = EU   (product-wide architectural constraint)
+
 system  acme-shop
   name        "Acme Shop"
   kind        application
+  references-domains [ Ordering, Catalog ]   -- whole domains (§3.2.5)
   purpose     "Let customers buy coffee supplies"
   class       [ gui ]                  -- interaction class gates the rest (§3.2.2)
   platforms   [ iOS, Android, web ]    -- in scope because class = gui
+  quality-demands:                     -- §3.6, system-specific
+    - concurrent_users  <= 10000       (runtime · measured vs telemetry)
+    - uptime            >= 99.9%        (runtime · measured vs telemetry)
 
-(a sibling system could share this domain — e.g. `acme-admin`, kind=website,
- class=[gui], platforms=[web,desktop] — or a `acme-cli`, class=[tui], whose
- terminal context brings grid/colour-depth/key dimensions instead of form factor,
- reifying the same single-select/trigger-action AIOs to terminal widgets.)
+system  acme-admin                     -- a second surface over the SAME domains
+  name        "Acme Admin"
+  kind        website
+  references-domains [ Ordering, Catalog ]   -- same Order, same refund rule (§3.1)
+  purpose     "Let staff manage orders and refunds"
+  class       [ gui ]
+  platforms   [ web, desktop ]
+  -- gets the same Order Decider, same ORDER-REFUND-1 invariant, same events —
+  -- differs only in surface: its own flows, its own pages, no checkout journey.
 ```
+
+Both systems **reference** the `Ordering` and `Catalog` domains; neither owns them.
+The refund rule, the `Order` Decider, and `ev-order-placed` live in the **domain**
+(§3.1), so the shop and the admin tool agree on them automatically — they differ only
+in *journey* and *surface*. `data_residency = EU` sits on the **product** (it binds
+every system); the runtime bounds above sit on each **system** (the shop's traffic
+profile differs from the admin tool's). An `acme-cli` (class `[tui]`) could be a third
+surface over the same domains, its terminal context reifying the same
+single-select/trigger-action AIOs to terminal widgets.
+
+**Quality demands** (§3.6) split by *how they're checked*: `concurrent_users` and
+`uptime` are **runtime bounds** — measured continuously against telemetry, a breach
+meaning the system underperforms *or* the bound was unrealistic; `data_residency=EU`
+(product-wide) is an **architectural constraint** — checked at build time against the
+deployment's declared regions (§4.2), never observed after the fact. A scoped demand
+would attach lower down: e.g. the **checkout flow** carries `completion_time <= 3s` (a
+runtime bound on that flow), giving the runtime check a precise subject to measure.
+
+**Versions and direction** (§7.3). This What is **What 1.0** (it has the checkout,
+browse, orders, and refund flows); the realisation is **How 1.0.0 realises What 1.0**.
+The product's *direction* is a declared target:
+
+```
+target  What 2.0 = { refund-flow ✓, loyalty-slice ✗, multi-currency-slice ✗ }
+direction = distance(What 2.0) = { loyalty-slice, multi-currency-slice }   -- 1 of 3 done
+```
+
+`refund-flow` is already realised (it is in What 1.0), so it passes `feature_done`;
+the other two slices are named but unrealised. "How far to What 2.0" is therefore a
+*query* — two slices remain — not a roadmap line. When `loyalty-slice` passes its
+verifications, the gap closes itself; nothing is hand-maintained. Adding the loyalty
+behaviour will bump the What **minor** (additive flow); a later refactor of how it is
+built bumps only the How **patch**, under the same What.
 
 The checkout flow below belongs to `acme-shop` and roots at its page graph (§6).
 Deployment identity — `shop.acme.com`, bundle `com.acme.shop` — is **How** (§4.2),
@@ -119,6 +169,25 @@ trigger holds none). Telling a sibling `acme-fulfilment` system an order shipped
 `ev-order-placed` events (one source system) and issues a Command into
 `acme-fulfilment`, producing *its* events. That is the only sanctioned cross-system
 channel (§3.2.5).
+
+**A journey** (§3.0.1) makes the *whole* path visible. "Order to fulfilment" spans
+two systems — the customer places the order in `acme-shop`, staff fulfil it in
+`acme-admin` — so it is a **product-level journey** composing one flow from each,
+linked by a Translation:
+
+```
+product  acme · journey "order-to-fulfilment"
+  acme-shop  flow place-order   ──┐
+                                  │ ⟶ Translation: ev-order-placed (acme-shop)
+                                  │               → cmd-accept-fulfilment (acme-admin)
+  acme-admin flow fulfil-order  ◀─┘
+```
+
+The journey owns nothing — it references two existing flows and the Translation
+between them. The crossing **is** a Translation, so no new coupling appears:
+`acme-shop` still knows nothing of `acme-admin`'s internals. But now the full
+footprint of order-to-fulfilment is one traversal across both systems, where before
+it was two disconnected flows nobody could read end to end.
 
 ## 3. The What — the Decider (§3.3)
 

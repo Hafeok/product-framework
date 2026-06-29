@@ -12,7 +12,7 @@
 | Field | Value |
 |-------|-------|
 | **Name** | The Product Framework |
-| **Version** | 1.5.0 |
+| **Version** | 1.6.0 |
 | **Repository** | https://github.com/Hafeok/product-framework |
 | **License** | Apache-2.0 (shapes, schemas, code) · CC BY 4.0 (specification text) |
 | **Maintainer** | Emil ([@Hafeok](https://github.com/Hafeok)) |
