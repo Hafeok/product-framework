@@ -52,8 +52,9 @@ precise, typed, and derived. Intake is the short translation step that turns a
 request into a tracked piece of work located on the existing graph. Keep it
 lightweight — this is triage, not modelling.
 
-1. **Locate it on the graph.** A feature is *a slice of the event model*
-   (spec §7.1), so the first question is always "where does this slice live?"
+1. **Locate it on the graph.** A feature is *a subgraph of the event model*
+   (spec §7.1) — one or more flows, each a chain of atomic slices — so the first
+   question is always "where does this feature live?"
    Which **system** ([§3.2.5](docs/product-framework.md#325-the-system--what-is-being-described))?
    Which **bounded context** ([§3.1](docs/product-framework.md#31-the-domain-model--structure-and-data))?
    Which existing **flows** does it touch or extend?

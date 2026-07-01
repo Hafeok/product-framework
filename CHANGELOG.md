@@ -6,6 +6,25 @@ and the specification aims to follow [Semantic Versioning](https://semver.org/)
 adapted for a standard: the MAJOR version increments on a change that can
 invalidate a previously-conformant instance.
 
+## [1.6.1] — 2026-07-01
+
+A **patch**: a terminology clarification that changes no behaviour and invalidates
+no conformant instance (exactly the "clarification" case of §7.3's version rules).
+
+### Fixed
+- **"Slice" terminology disambiguated.** The word was doing double duty — the
+  *atom* (one pattern instance = a work unit, §3.2.0) and, loosely, a *feature*
+  ("a slice of the event model", §7.1). Since even one flow is a chain of many
+  atomic slices, a feature *contains* slices rather than *being* one, so the old
+  §3.2.0 claim that they are "the same cut" overstated an identity that is really a
+  containment (**feature ⊇ flow ⊇ slice**). "Slice" is now reserved for the atom
+  throughout; a feature is a **subgraph** (the word §7 already used). Corrected the
+  §3.2.0 slicing note, §7.1, §7.3 (target partitions are sets of *features*; the
+  `distance` formula ranges over features), rule §10.11, and the loose uses at the
+  journey and page-graph sections; the GUIDE and worked example follow suit
+  (`loyalty-slice` → `loyalty-feature`, etc.). No semantic change — a pure
+  precision fix, in the spirit the framework applies to every other term.
+
 ## [1.6.0] — 2026-06-29
 
 A minor release adding the framework's **execution boundary**, its **temporal
@@ -15,6 +34,23 @@ invalidate a prior-conformant instance: it gives instances new boundaries and
 checks they may target, plus non-normative guidance for day-to-day use.
 
 ### Added
+- **Representation Contract — cited from the foundation, folded into conformance.**
+  The framework's cornerstone claim — *everything is one graph; "describe this
+  system" is a query, not four documents* — was asserted in prose but never made a
+  checkable requirement. It now is. The **parent Two Pillars Specification Framework**
+  gains a **Representation Contract** (authored in `specification-framework.md`)
+  stating the abstract, technology-independent obligations any conformant
+  specification substrate must satisfy: addressable typed nodes/edges; traversable
+  derivation edges; footprint, blast radius and `done` *computable over the graph*;
+  views derivable as projections (never separately maintained); full queryability.
+  RDF/SPARQL/SHACL is one conformant implementation, a property graph another — the
+  contract fixes *properties*, not a stack. The Product Framework **cites** it (§2,
+  §8 mapping row, §10 rule 1) exactly as it cites SPMC: a "specification" that merely
+  *describes* a graph in prose or disconnected files — on which footprint/blast-
+  radius/done are not computable — is now explicitly **non-conformant**, regardless
+  of content completeness. The explorer gains a Representation Contract node. *(The
+  contract itself lives up at the foundation level, common to every spec-pillar
+  framework; this framework instantiates it without redefining it.)*
 - **§3.0.1 Journeys — flows that span systems.** Adds a product-level **journey**: a
   declared, *derived* composition of single-system flows linked at crossings, where
   **every crossing is a Translation** (§3.2.0). A business process that spans systems

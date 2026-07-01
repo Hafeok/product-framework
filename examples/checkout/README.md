@@ -67,13 +67,13 @@ browse, orders, and refund flows); the realisation is **How 1.0.0 realises What 
 The product's *direction* is a declared target:
 
 ```
-target  What 2.0 = { refund-flow ✓, loyalty-slice ✗, multi-currency-slice ✗ }
-direction = distance(What 2.0) = { loyalty-slice, multi-currency-slice }   -- 1 of 3 done
+target  What 2.0 = { refund-flow ✓, loyalty-feature ✗, multi-currency-feature ✗ }
+direction = distance(What 2.0) = { loyalty-feature, multi-currency-feature }   -- 1 of 3 done
 ```
 
 `refund-flow` is already realised (it is in What 1.0), so it passes `feature_done`;
-the other two slices are named but unrealised. "How far to What 2.0" is therefore a
-*query* — two slices remain — not a roadmap line. When `loyalty-slice` passes its
+the other two features are named but unrealised. "How far to What 2.0" is therefore a
+*query* — two features remain — not a roadmap line. When `loyalty-feature` passes its
 verifications, the gap closes itself; nothing is hand-maintained. Adding the loyalty
 behaviour will bump the What **minor** (additive flow); a later refactor of how it is
 built bumps only the How **patch**, under the same What.
@@ -391,7 +391,7 @@ retains only the principles those passing checks enforce.
 
 ## 9. Delivery (§7)
 
-The checkout flow is one **feature** — a reference to its flow slice. Its domain
+The checkout flow is one **feature** — a reference to its flow (a chain of slices). Its domain
 **footprint** is *derived*: `{Cart, LineItem, Order, Money, OrderNo}` — the concepts
 its events change and its projections read, not a hand-listed set. `feature_done`
 ranges over that footprint; the release cut is closed iff nothing in it depends on an
