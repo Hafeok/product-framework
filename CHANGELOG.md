@@ -6,6 +6,72 @@ and the specification aims to follow [Semantic Versioning](https://semver.org/)
 adapted for a standard: the MAJOR version increments on a change that can
 invalidate a previously-conformant instance.
 
+## [1.7.0] — 2026-07-02
+
+A minor release that **adopts the new contracts tier** as a dependency. The
+Build seam's two message shapes (WorkUnit, VerdictEvent) no longer live only as
+this framework's own preview schemas — they are now owned by
+[**ai-development-contracts**](https://github.com/Hafeok/ai-development-contracts)
+`0.1.0`, the tier that sits *between* the foundation and the frameworks and that
+both a specification framework and an execution framework depend on. This
+framework **authors** that shape (producer-owns, foundation RFC 0001) and
+**conforms to it as a dependency**.
+
+The seam schemas were shipped under `preview/` and explicitly not yet frozen, so
+realigning them does not invalidate a prior *conformant* instance (nothing at
+Levels 1–4 depended on the preview envelope's exact field names); this is a
+minor, not a major. Instances that had built tooling against the old preview
+envelope must migrate — see below.
+
+### Changed
+- **The Build seam adopts the contracts-tier WorkUnit / VerdictEvent (§5.1).**
+  The prior design — a minimal "universal envelope" plus *exactly one opaque
+  `executor_extension` slot* holding tiers, ladders, and the cell-DAG — is
+  replaced by the contract's **complete, executable SPMC package**. What was
+  opaque and executor-owned is now **producer-authored and normative**:
+  - `tier` (unit-wide, homogeneity checked before emit), `ladder-position`, and
+    `artifact-delivery` (`inline` | `workspace`) are now first-class fields.
+  - `parent-deliverable` is now required (was an optional `parent_lineage`);
+    `bundle-hash` now carries an `algo:digest` form over a **declared canonical
+    form** (`context-pool.bundle-form-profile`).
+  - `spmc-bundle` is restructured into a unit-level **`model`** and
+    **`context-pool`**, with the cell-level Schema and Prompt moved into a
+    sealed **`cell-graph`** (per-cell `schema` + `prompt` + `context-refs` +
+    `output`, no cross-unit edges).
+  - The VerdictEvent now carries `tier-ran`, per-cell `cell-results` (with
+    content-hash-identified artifacts delivered per the unit's
+    `artifact-delivery` mode), and a required `next-consequence`.
+  Field naming follows the contract (kebab-case). Local projections of the
+  normative schemas ship at [`preview/build-seam/`](preview/build-seam/); the
+  contract governs where they differ.
+- **The SPMC Model axis is now pinned by the producer (§5).** `model` carries a
+  **full binding** — provider, model-id, quantization, invocation parameters —
+  not a bare capability label. This closes the axis the framework had
+  deliberately left across the seam. The open/closed line moved accordingly:
+  *scheduling, admission, batching, and how the artifact is produced* remain the
+  executor's concern, but *pinning the model binding* is now correctly the
+  producer's job, because a verdict is only attributable to an immutable input
+  if the model that produced it is itself immutable (foundation RFC 0002 axis
+  precision).
+
+### Added
+- **Contracts-layer conformance in [`CONFORMANCE.md`](CONFORMANCE.md).** A new
+  *Contracts Layer — Producer Conformance* section works the producer checklist
+  item by item, and the header declares *Contracts — Producer ☑* against
+  ai-development-contracts `0.1.0`. SPMC coverage is upgraded from ◐ to ☑
+  (all four axes pinned); the *Model axis* and *Prompt-as-a-named-axis* known
+  gaps are marked closed.
+
+### Migration
+- An executor or tool built against the 1.6.x **preview** seam envelope (with
+  `executor_extension`) must move to the contract's field set: read `tier` /
+  `ladder-position` / `artifact-delivery` from the envelope rather than the
+  extension slot, consume the restructured `spmc-bundle` + `cell-graph`, and
+  emit VerdictEvents with `tier-ran` / `cell-results` / `next-consequence`.
+  Validate against [`preview/build-seam/`](preview/build-seam/) (or the
+  contract's normative `schemas/`) and the worked pair in
+  [`preview/build-seam/example.md`](preview/build-seam/example.md).
+
 ## [1.6.1] — 2026-07-01
 
 A **patch**: a terminology clarification that changes no behaviour and invalidates
