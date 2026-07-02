@@ -1,23 +1,29 @@
-# AI Development Foundations — Conformance Statement
+# AI Development Foundations & Contracts — Conformance Statement
 
-> This statement asserts that **The Product Framework** conforms to the
+> This statement asserts that **The Product Framework** conforms to (1) the
 > [AI Development Foundations](https://github.com/Hafeok/ai-development-foundations)
-> **Pillar One — Specification Framework**. Conformance is self-declared: every
-> claim below cites the section of [`docs/product-framework.md`](docs/product-framework.md)
-> that satisfies it, and anyone may verify it by reading the framework against the
-> published [specification checklist](https://github.com/Hafeok/ai-development-foundations/blob/main/conformance/specification-conformance.md).
+> **Pillar One — Specification Framework**, and (2) the
+> [AI Development Contracts](https://github.com/Hafeok/ai-development-contracts)
+> **WorkUnit / VerdictEvent** seam contracts as a **producer**. Conformance is
+> self-declared: every foundation claim cites the section of
+> [`docs/product-framework.md`](docs/product-framework.md) that satisfies it, and
+> anyone may verify it against the published
+> [specification checklist](https://github.com/Hafeok/ai-development-foundations/blob/main/conformance/specification-conformance.md);
+> the contracts claims cite the fields our emitted messages carry and are checked
+> against the [producer checklist](https://github.com/Hafeok/ai-development-contracts/blob/main/conformance/producer-conformance.md).
 
 ## Framework
 
 | Field | Value |
 |-------|-------|
 | **Name** | The Product Framework |
-| **Version** | 1.6.1 |
+| **Version** | 1.7.0 |
 | **Repository** | https://github.com/Hafeok/product-framework |
 | **License** | Apache-2.0 (shapes, schemas, code) · CC BY 4.0 (specification text) |
 | **Maintainer** | Emil ([@Hafeok](https://github.com/Hafeok)) |
-| **Conforms to** | Specification Framework ☑ / Execution Contract ☐ |
+| **Conforms to** | Specification Framework ☑ / Execution Contract ☐ / Contracts — Producer ☑ / Contracts — Consumer ☐ |
 | **Foundation version targeted** | `ai-development-foundations` @ `13b0cb4` (2026-06-26) |
+| **Contracts version targeted** | `ai-development-contracts` @ `0.1.0` (foundation_ref: `main`) |
 | **Autonomy level** | n/a (specification framework; does not execute) |
 
 ## Statement
@@ -38,8 +44,9 @@ claim.
 
 ## Pillar One — Specification
 
-**Coverage:** What layer ☑ · How layer ☑ · SPMC ◐ (partial — see §5 below and
-[Known gaps](#known-gaps)).
+**Coverage:** What layer ☑ · How layer ☑ · SPMC ☑ (all four axes now pinned —
+the Model axis was closed by adopting the contracts-tier WorkUnit; see §5 below
+and [Contracts Layer — Producer Conformance](#contracts-layer--producer-conformance)).
 
 ### Summary
 
@@ -50,7 +57,7 @@ claim.
 | What completeness (9 sections) | ◐ | §3, §10 — 7 of 9 fully; 2 partial |
 | How completeness (8 sections) | ◐ | §4, §9 — 7 of 8 fully; 1 partial |
 | Derivation contract (5 rules) | ☑ | §9 (typed links), §4.1, §10 |
-| SPMC (4 axes, frozen context) | ◐ | §5, §5.1, §6.2 — Schema & Context met; Model axis out of scope |
+| SPMC (4 axes, frozen context) | ☑ | §5, §5.1, §6.2 — all four axes pinned; Model closed as a full binding via the contracts-tier WorkUnit |
 | Scale discipline | ☑ | §10 (rules 1, 13–15), §8.1 |
 | The seam (Section 7) | ☑ | §5.1 — defined, frozen, independently versioned, gated before emit |
 
@@ -112,21 +119,21 @@ claim.
 
 ### Section 5 — SPMC
 
-The work unit (§5) is the framework's SPMC bundle (§8 mapping). Coverage is partial
-by design — the framework owns the **specification** axes and treats the
-**Model** axis as the executor's concern beyond the Build seam (§1 open/closed,
-§5.1).
+The work unit (§5) is the framework's SPMC bundle (§8 mapping), emitted as the
+contracts-tier WorkUnit (§5.1). Coverage is now **full**: adopting that contract
+closed the Model axis, which earlier cuts had left across the seam. Model and
+Context are unit-level carriers; Schema and Prompt attach per cell.
 
 | Axis / property | Met? | Where |
 |---|---|---|
-| **Schema** — output shape; non-conforming output rejected | ☑ | One unit produces one artifact against versioned acceptance criteria; a failed verdict rejects it (§5, §6.2); the acceptance schema is dual-read like the layout model (§4.3) |
-| Schema pins the shape language, recorded alongside | ☑ | Encoding fixes the shape language (SHACL or any validatable-shape language), recorded in the graph (§9) |
-| **Prompt** — derived from What behaviors/criteria, filtered through How responsibility | ◐ | A unit reads its What concepts and How principles/patterns by pointer and re-derives nothing (§5); the framework does not name "prompt" as a separate pinned axis — see Known gaps |
-| **Model** — selected by complexity remaining after the How | ☐ | **Out of scope by design.** Choosing/running the model is the executor's concern across the seam (§1, §5.1) — see Known gaps |
-| Model pinned as a binding (precision/quantization/params) | ☐ | Out of scope — same reason |
-| **Context** — assembled from the How, **frozen and bounded** at execution; no mid-execution retrieval | ☑ | Frozen, fully-inlined input bundle travelling by value with a content-hash identity; nothing fetched mid-run; freeze precedes emit (§5, §5.1, §6.2) |
-| Each axis pinned to the precision at which it affects output | ◐ | The frozen bundle's **content hash is its identity**, so any change to schema/context is a distinct unit (§5.1); Model-axis pinning is out of scope |
-| Axes independently attributable (a quality failure points to which axis) | ◐ | Per-criterion findings localize failures to a model element (§6.2) and the rationale trace retracts exactly the failed claims (§5); attribution is by graph element rather than by named SPMC axis |
+| **Schema** — output shape; non-conforming output rejected | ☑ | Each cell carries its output shape and versioned acceptance criteria; a failed verdict rejects it (§5, §6.2); the acceptance schema is dual-read like the layout model (§4.3) |
+| Schema pins the shape language, recorded alongside | ☑ | Each cell's `schema` pins its **shape-language** with the shape document inline (§5, §5.1); encoding fixes the shape language in the graph (§9) |
+| **Prompt** — derived from What behaviors/criteria, filtered through How responsibility | ☑ | The WorkUnit's `cell-graph` names **Prompt** as a per-cell axis, carried inline; each cell's prompt derives from What concepts and How principles referenced in the context-pool and re-derives nothing (§5, §5.1) |
+| **Model** — selected by complexity remaining after the How | ☑ | The unit's `tier` is the single worker-role it runs at (homogeneity checked before emit); the producer selects it from the complexity the How leaves (§5, §5.1) |
+| Model pinned as a binding (precision/quantization/params) | ☑ | `spmc-bundle.model.binding` pins provider, model-id, quantization, and invocation parameters — a full binding, not a label (§5, §5.1) |
+| **Context** — assembled from the How, **frozen and bounded** at execution; no mid-execution retrieval | ☑ | A frozen, fully-inlined content-addressed `context-pool` travelling by value with a content-hash identity; nothing fetched mid-run; freeze precedes emit (§5, §5.1, §6.2) |
+| Each axis pinned to the precision at which it affects output | ☑ | The frozen bundle's **content hash is its identity** over a declared canonical form, so any change to schema/prompt/context is a distinct unit; the Model binding pins served precision + invocation (§5.1) |
+| Axes independently attributable (a quality failure points to which axis) | ☑ | Per-cell `cell-results` localize a failure to a cell (its S and P) and the unit-level M/C; per-criterion findings and the rationale trace retract exactly the failed claims (§5, §6.2) |
 
 ### Section 6 — Scale discipline
 
@@ -157,6 +164,52 @@ capabilities, environment, tools, credentials, transition contract) and asserts 
 closure contract. An execution framework conforming to Pillar Two can plug in
 behind this seam without either side changing.
 
+## Contracts Layer — Producer Conformance
+
+> Asserts that every WorkUnit produced under this framework satisfies the
+> [WorkUnit contract](https://github.com/Hafeok/ai-development-contracts/blob/main/contracts/work-unit.md)
+> and that the framework reconciles
+> [VerdictEvents](https://github.com/Hafeok/ai-development-contracts/blob/main/contracts/verdict-event.md)
+> correctly — the **producer** (emitting/authoring) side of the seam. Checked
+> against the [producer checklist](https://github.com/Hafeok/ai-development-contracts/blob/main/conformance/producer-conformance.md)
+> @ contracts `0.1.0`. The framework defines the shape every conforming instance
+> emits; the reference JSON projection lives at
+> [`preview/build-seam/`](preview/build-seam/) (governed by the contract's
+> normative [`schemas/`](https://github.com/Hafeok/ai-development-contracts/tree/main/schemas)).
+
+### Emitting WorkUnits
+
+| Requirement | Met? | Where |
+|---|---|---|
+| Every WorkUnit validates against the normative schema for its encoding + the cross-unit-edge structural check | ☑ | §5.1; local projection [`preview/build-seam/workunit.schema.json`](preview/build-seam/workunit.schema.json); `cell-graph` requires only intra-unit cell ids |
+| Carries all schema fields with the declared types | ☑ | §5.1 (the full field set: `unit-ref`, `parent-deliverable`, `bundle-hash`, `tier`, `acceptance-class`, `ladder-position`, `artifact-delivery`, `spmc-bundle`, `cell-graph`) |
+| `spmc-bundle` is **fully resolved** — no field requires a callback | ☑ | §5.1 "the freeze is the decoupling"; a unit needing a mid-execution callback is not frozen and must not be emitted |
+| Every unit is **executable** — each cell carries prompt + shape inline, `context-refs` resolve, output declared | ☑ | §5, §5.1 (per-cell Schema + Prompt inline, context-pool fragments selected by id, per-cell `output`) |
+| `artifact-delivery` declared per unit (`inline`/`workspace`), no undeclared store | ☑ | §5.1 (`artifact-delivery`; undeclared side channels forbidden) |
+| Axis precision — Model pinned as a binding, Schema pinned with its shape language | ☑ | §5 (Model = full binding; per-cell Schema pins its shape-language) — the axis closed since the prior cut |
+| **Homogeneity check runs before emit**, on the specification side | ☑ | §5.1 (`tier` is unit-wide; a heterogeneous unit is a decomposition defect that fails dispatch before emit) |
+| `bundle-hash` is the content hash of `spmc-bundle` as emitted | ☑ | §5.1 (hash of the frozen bundle; identity and body agree at emit) |
+| `bundle-hash` taken over a **declared canonical form** | ☑ | §5.1 + `context-pool.bundle-form-profile` names the canonical serialization |
+| `cell-graph` contains **no cross-unit edges** — the interior is sealed | ☑ | §5.1 ("the interior is sealed"); schema structural check |
+| `unit-ref` / `parent-deliverable` are opaque labels, not pointers | ☑ | §5.1 (opaque identity + lineage; the executor never dereferences them into the graph) |
+| Emits by value; `bundle-hash` present regardless (by-reference migration additive) | ☑ | §5.1 (by-value-plus-hash discipline) |
+
+### Consuming VerdictEvents (reconciliation)
+
+| Requirement | Met? | Where |
+|---|---|---|
+| Reconciles by **observing the stream**, not blocking on a call to the executor | ☑ | §5.1 (verdict is an event; the producer holds no knowledge of any consumer; temporal decoupling) |
+| Reconciliation matches on `unit-ref` / `bundle-hash`; no shared runtime state | ☑ | §5.1 (self-describing verdict echoes identity + lineage + bundle-hash) |
+| On `rejected` / `escalate` with ladder remaining, **re-dispatches** — fresh unit, same `unit-ref`, same `bundle-hash` if unchanged, `ladder-position` advanced | ☑ | §5.1 (`ladder-position`); §6.2 `escalate` verdict; re-dispatch is a fresh emit |
+| Honors `acceptance-class` (`auto-commit-if-green` vs `needs-verdict`) | ☑ | §5.1, §7.2 (the consumer, not the executor, decides to commit or surface) |
+| Tolerates **temporal decoupling** — a verdict emitted while not listening reconciles on next read | ☑ | §5.1 ("temporal decoupling follows for free") |
+
+### Ownership
+
+| Requirement | Met? | Where |
+|---|---|---|
+| Treats the WorkUnit shape as **producer-authored** and published at the contracts tier; accepts no executor-specific override of the shape | ☑ | §5.1, §8 seam row (producer-owns per foundation RFC 0001; the shape lives on the contracts tier, this framework authors it and depends on it) |
+
 ## Known gaps
 
 Honest partial conformance, with intent for each item.
@@ -166,9 +219,18 @@ Honest partial conformance, with intent for each item.
 | **What/How Open Questions** — no dedicated owner-tagged "Open Questions" artifact with an explicit "what it blocks" field. | Functionally covered by measured under-specification signals (intent-reliance rate §3.2.1, data-divergence rate §3.1) and by Rule 5 / the `escalate` verdict surfacing undeclared decisions. Considering promoting an explicit Open-Question node kind in a future cut so each known unknown carries an owner and a blocked-set as graph data. |
 | **Out-of-scope list per What** — the framework does not require every What instance to carry a non-empty explicit out-of-scope list (it declares scope at the framework level and derives in-scope footprints). | Under consideration as a What-side completeness rule; today the boundary is expressed structurally (bounded-context mappings, derived feature footprints, allowlist layout) rather than as a prose exclusion list. |
 | **Decision "rejected alternatives"** — §4.1 mandates what/why/when-it-applies/when-it-does-not but not a discrete rejected-alternatives field. | "When it does not apply" carries the same information for traceability; a dedicated `rejected_alternatives` attribute is a candidate addition to the decision shape. |
-| **SPMC Model axis** — the framework does not select, pin, or bind the model (precision/quantization/invocation params). | **Deliberate scope boundary**, not a defect: model choice and runtime live across the Build seam and belong to a Pillar Two executor (§1, §5.1). A Pillar One + Pillar Two pairing built on these foundations closes this axis. |
-| **SPMC "Prompt" as a named axis** — the unit's instruction derives from What+How by pointer but is not pinned as a distinct labelled axis. | Coverage is by derivation and reference rather than by an explicit per-axis label; revisiting whether to name the prompt axis explicitly when (or if) the framework moves closer to the execution boundary. |
+
+> **Closed since 1.6.1.** The **SPMC Model axis** ("the framework does not
+> select, pin, or bind the model") and **SPMC "Prompt" as a named axis** were
+> previously declared out of scope. Adopting the contracts-tier WorkUnit
+> (v1.7.0) closed both: the unit now pins the Model as a full binding and names
+> Prompt as a per-cell axis (§5, §5.1). The framework's open/closed line still
+> holds — *scheduling, admission, batching, and how the artifact is produced*
+> remain the executor's concern — but *pinning the model binding* is now
+> correctly the producer's job, because a verdict is only attributable to an
+> immutable input if the model is itself immutable.
 
 ---
 
-*Statement last verified: 2026-06-26 against ai-development-foundations `13b0cb4`.*
+*Statement last verified: 2026-07-02 against ai-development-foundations `13b0cb4`
+and ai-development-contracts `0.1.0`.*
