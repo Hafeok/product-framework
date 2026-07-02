@@ -15,7 +15,7 @@ product as three connected, machine-readable models:
   expressed as a verifiable predicate.
 
 It defines **shapes and rules, not any particular product.** You build your
-domain models, your reusable How (archetypes), your verification libraries, and
+domain models, your reusable How (blueprints), your verification libraries, and
 your tooling *on top of* the framework — and adopting it never requires
 disclosing them.
 

@@ -350,7 +350,26 @@ a11y:          inherited from AIOs — 1.3.1 (collection), 2.5.8 + 2.4.7 (action
 Note what is **not** here: no dropdown, no colour, no layout, no literal copy. Every
 realisation term is absent by *type* (§3.2.2), not by discipline.
 
-## 7. The How — reification & content (§4.5, §4.6)
+## 7. The How — blueprint, deployable units, reification & content (§4, §4.5, §4.6)
+
+Both systems are built from one **blueprint** — "a React-Native app with a
+hexagonal core" — instantiated as **DeployableUnits**, one per system per
+environment:
+
+```
+blueprint  rn-hexagonal-app   (a reusable How)
+  │ instantiated-as
+  ├─ DeployableUnit  acme-shop-ios     deploys acme-shop · com.acme.shop      (prod)
+  ├─ DeployableUnit  acme-shop-ios     deploys acme-shop · com.acme.shop.stg  (staging)
+  ├─ DeployableUnit  acme-shop-web     deploys acme-shop · shop.acme.com
+  └─ DeployableUnit  acme-admin-web    deploys acme-admin · admin.acme.com
+```
+
+The blueprint holds the invariant code-shaping decisions (pure core, layering); each
+DeployableUnit carries its own **deployment identity** (§4.2) — which is why staging
+and production are two DeployableUnits of the *same* system on the *same* blueprint,
+differing only in address. The mapping here fans out (one system → a web + an iOS
+deployable unit), declared as above.
 
 The What above reifies through the design system manifest for `context = {phone, touch}`:
 
@@ -378,7 +397,7 @@ is the pluggability the AUI layer and the two provider profiles exist to deliver
 
 | Check (§6.3) | On this example |
 |---|---|
-| Layout conformance | the repo tree matches the archetype's layout model |
+| Layout conformance | the repo tree matches the blueprint's layout model |
 | Behavioural simulation | the Decider §3 and Projector §4 are sound & complete *before* code |
 | Oracle conformance | `ordernumber-checksum` matches Damm across its oracle pairs |
 | Domain conformance | realised Cart/Order match §1; no structural drift |
