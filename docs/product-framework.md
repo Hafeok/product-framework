@@ -2,7 +2,7 @@
 
 **An open standard for specifying software as What, How, and Delivery.**
 
-*A conformant instantiation of the Two Pillars Specification Framework. Version 1.8.0 — open specification.*
+*A conformant instantiation of the Two Pillars Specification Framework. Version 1.9.0 — open specification.*
 
 ---
 
@@ -29,6 +29,7 @@
 11. [Design System Conformance Profile](#11-design-system-conformance-profile) — 🅿 *Preview*
 12. [Content Store Conformance Profile](#12-content-store-conformance-profile) — 🅿 *Preview*
 13. [Data Conformance Profile](#13-data-conformance-profile) — 🅿 *Preview*
+14. [Authoring Scope Conformance Profile](#14-authoring-scope-conformance-profile) — 🅿 *Preview*
 
 ---
 
@@ -1123,6 +1124,53 @@ The **data-divergence rate** — the proportion of production data that fails th
 A team that adopts data conformance alone has, as a side effect, done the hardest part of Level 1 (§8.1): declared a real, validatable domain structure. From there, the rest of the framework is incremental — the event model attaches to entities that already exist, Deciders and Projectors make their behaviour executable, the UI model derives from projections. Data conformance pays for itself immediately *and* lays the foundation the rest builds on, which is why it is offered as the entry point rather than a final level.
 
 > **Why Preview.** This profile names a packaging, not a new mechanism; it awaits a reference adoption that runs data conformance continuously against a real production system and reports a data-divergence trend, after which it is proposed for normative status as the framework's recognized minimal entry point.
+
+---
+
+## 14. Authoring Scope Conformance Profile
+
+> **🅿 PREVIEW — not yet normative.** Like §11–§13, a Preview profile published ahead of a landed reference instance; where this section and the normative body appear to differ, the normative body governs. Unlike §11–§13 (providers that plug into a *realised* instance, or a minimal standalone adoption), this profile concerns the What's **write paths** — *who may author which parts of the specification, and how completely* — the intake counterpart to the reification seams below the line.
+
+### 14.1 The principle: specification has provenance
+
+The What does not materialise from nothing — it is *authored*, and its authors are heterogeneous: a designer's Figma file authors the interface slice, a domain expert's Event Modeling board authors the event slice, a legacy schema already *is* the de-facto data contract, an existing Jira board partially authors a journey. **Things to be specified may exist, completely or partially, in existing systems.** An **authoring scope** is how such a system enters a process in the funnel (§2.1): as a **bounded co-author** of the What — its contribution first-class *authored meaning*, not "context to consult," but only within a declared, enforced slice.
+
+This is the frozen-boundary discipline (the discovery-record / attestation move, §3.2.3) applied at the *intake* edge: authored meaning enters the What only through a sanctioned channel, and a tool authoring outside its declared slice is disqualifying **regardless of content quality** — exactly as a UI step naming a concrete control is a structural violation however good the control (§3.2.1). It is also the Polanyi floor (§3.5) written declaratively: a tool's exclusion list is the set of What-elements that surface structurally cannot carry.
+
+### 14.2 The contract
+
+Each tool that authors into the What carries an **authoring-scope declaration**:
+
+- **`authors`** — the What-element kinds this tool MAY author, each with a **completeness** (`sufficient` — the tool can author the kind fully; `partial` — it contributes, other authors expected) and a **channel** (how the meaning is carried — a native annotation, a component name, frame structure, a variable export). The adapter reads only declared channels.
+- **`excluded`** — the kinds this tool MUST NOT author, stated explicitly rather than inferred by omission; inbound content authoring an excluded kind is rejected regardless of quality.
+- **`process-slice`** — optionally, the funnel slice (§2.1) this authorship enters, so authored meaning arrives where the process expects it.
+
+The **kind vocabulary is the framework's own ontology** — `domain-structure` (§3.1); the event-model blocks `trigger` / `command` / `event` / `view` (§3.2.0); `decider` / `projector` (§3.3–§3.4); `ui-step` / `aio` (§3.2.1–§3.2.2); `state-annotation` (§3.2.1); `page-graph` (§3.2.4); `context-of-use` (§3.2.2); `accessibility-criteria` (§3.2.3); `content-reference` (§3.2.1, §4.6); `journey` (§3.0.1); `quality-demand` (§3.6); `data-shape` (§13); and so on. A scope is a **subset over kinds the framework already names**; the profile introduces no ontology of its own. One asymmetry the vocabulary carries: some kinds are **derived, not authored** — a read model's state space derives from the projection's shape (§3.2) — and a derived kind belongs in *every* tool's excluded list, because no tool is its author.
+
+**Ownership.** The scope contract lives at the What's level; a tool's **adapter** *enforces* a scope, it never *owns* one — the same deflation the framework applies to every seam adapter: strip the intermediary of independent meaning, and let it only project onto, and police the boundary of, an authoritative core.
+
+### 14.3 Enforcement and the gap split
+
+The adapter runs an **enforcement oracle** on everything the tool submits: in-scope authored content is accepted into the What (subject to the What's own validity checks, which this profile does not replace); out-of-scope content is rejected, the basis naming the scope violation — a Decider authored in Figma is rejected *because Figma is not a sanctioned author of Deciders*, not because the Decider is wrong. Everything the adapter suspects needs authorship then splits along the scope boundary into two findings that demand different actions from different people:
+
+| Finding | Meaning | Action |
+|---|---|---|
+| `unauthored-within-scope` | the tool *could* author this and didn't | author it **in the tool** |
+| `outside-scope` | no work in this tool can author this | **route** to a sanctioned author |
+
+This turns the Polanyi floor (§3.5) from a flat failure list into a routed work queue.
+
+### 14.4 The completeness join
+
+A What is **complete** when every required element kind is authored by *some* sanctioned tool within its scope. A join across all connected tools reports, per required kind: **covered** (and by whom — partial authors *compose*, e.g. Figma's visual accessibility criteria plus product-cli's non-visual criteria jointly discharge the obligation); **coverable-but-unauthored** (a connected tool's scope includes it, but no one authored it yet); or **uncovered** (no connected tool's scope includes it — a sanctioned author is missing, and connecting one completes the What). This is the view-contract discipline (§3.4, §4.5 — nothing required left unauthored, nothing authored out of sanction) applied to authorship itself, one level up from views: a bidirectional join over *who may say what* rather than *what is shown where*.
+
+### 14.5 Where it sits in the ecosystem
+
+Authoring scopes are the **top** of a symmetry whose bottom is reification. Authorship flows *in* through scopes whose **scope** is checked (this profile); realisation flows *down* through seams whose **fidelity** is checked — the AIO→CIO reification of §4.5, and, for code, the Reify seam of §5.2, whose rendered verification shell the conformance runner (§6.3.1) then judges. Completeness at the top is the authoring join above; completeness at the bottom is the seam's coverage checks (§4.5) and behavioural conformance (§6.3). The two ends share one shape: a single authoritative What, thin adapters that own no meaning, and a bidirectional completeness join guarding each boundary — *who may say what* at the intake, *what is shown/computed where* at the reification.
+
+**The package.** The contract, its JSON Schema, the enforcement and completeness-join oracles (with a `--self-test`), and a Figma reference scope ship at [`authoring-scope/`](../authoring-scope/).
+
+> **Why Preview.** The contract, both oracles, and the Figma reference scope are specified and working, but the profile has not yet been exercised as a live intake path feeding a conformant What end to end, and its kind vocabulary is carried as a parallel list pending expression as direct references into the sections above. Planned before normative status: that expression-as-references, a **SHACL twin** (the dual-encoding discipline, §9), per-slice `required-kinds` profiles (the join's left-hand side, as data), and a second reference scope (an Event-Modeling tool) proving the join composes across genuinely different authoring surfaces. Published to invite exactly that experiment; the schema and kind set may change before it is proposed for normative status.
 
 ---
 

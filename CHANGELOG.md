@@ -6,6 +6,45 @@ and the specification aims to follow [Semantic Versioning](https://semver.org/)
 adapted for a standard: the MAJOR version increments on a change that can
 invalidate a previously-conformant instance.
 
+## [1.9.0] — 2026-07-06
+
+A minor release — **authoring scopes**, the intake counterpart to the reify layer.
+Additive: v1.8.0 graphs remain valid v1.9.0 graphs. Where 1.8.0 fixed how the What
+is *realised and verified* downstream (the Reify seam §5.2, the conformance-runner
+protocol §6.3.1), 1.9.0 names how the What is *authored* upstream — **tools as
+bounded co-authors of the What**, with an enforced scope and a completeness join
+over who may author what. Specification has provenance: things to be specified may
+exist, completely or partially, in existing systems, and a scope declaration is how
+such a system enters the funnel as a sanctioned author.
+
+### Added
+- **§14 Authoring Scope Conformance Profile (Preview).** A new Preview profile — the
+  write-path counterpart to §11–§13. Each tool that authors into the What (Figma, an
+  Event Modeling board, a legacy schema, a Jira board) declares an **authoring
+  scope**: the What-element kinds it MAY author (each `sufficient`/`partial`, with a
+  channel), the kinds it MUST NOT (`excluded`), and optionally the funnel slice it
+  enters. The kind vocabulary is the framework's own ontology (§3); a scope is a
+  subset over it. Enforcement rejects out-of-scope authorship **regardless of content
+  quality**; the former "annotation-needed" list splits into `unauthored-within-scope`
+  (author it in the tool) vs `outside-scope` (route to a sanctioned author); and a
+  **completeness join** across all connected tools reports each required kind as
+  *covered* / *coverable-but-unauthored* / *uncovered*. §14.5 locates authorship as
+  the top of the ecosystem's authoring↔reification symmetry, mirroring §4.5 / §5.2 /
+  §6.3.1 at the bottom.
+- **The `authoring-scope/` package.** The JSON Schema, both oracles (enforcement +
+  completeness join, with `--self-test` — 10/10 green), a Figma reference scope, and
+  the contract doc ship at [`authoring-scope/`](authoring-scope/).
+
+### Compatibility
+- **Additive only** — v1.8.0 graphs remain valid v1.9.0 graphs; the profile is
+  Preview and adds no normative requirement to the body.
+- The profile introduces **no new ontology**: its kind vocabulary is a subset over
+  sections the framework already defines (§3.0–§3.6, §4.5–§4.6, §13).
+- Planned before normative status: expressing the kind vocabulary as direct
+  references into the body (rather than the package's parallel list), a SHACL twin,
+  per-slice `required-kinds` profiles, and a second reference scope (an
+  Event-Modeling tool) proving the join composes across different authoring surfaces.
+
 ## [1.8.0] — 2026-07-06
 
 A minor release — the **reify layer**. Everything here is **additive**, so v1.7.0
