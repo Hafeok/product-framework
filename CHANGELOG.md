@@ -6,6 +6,79 @@ and the specification aims to follow [Semantic Versioning](https://semver.org/)
 adapted for a standard: the MAJOR version increments on a change that can
 invalidate a previously-conformant instance.
 
+## [1.8.0] — 2026-07-06
+
+A minor release — the **reify layer**. Everything here is **additive**, so v1.7.0
+graphs remain valid v1.8.0 graphs. It supplies the *encodings and protocols* that
+let any third party realise or verify a What without this repo's tooling: the
+framework gains **no new verification kind** — every check below lands in the
+existing §6.3 table (behavioural conformance, seam) — only the missing wire
+contracts. The organising principle is §5.1's, applied wider: **every seam is a
+protocol, not a linkage.**
+
+### Added
+- **Command / Event payload schemas (§3.2, §9).** A Command or Event MAY declare a
+  **payload schema** — named, optionally-typed fields — the public wire contract
+  between systems, encoded via the new `has_field` link and **authored rather than
+  inferred** (a declared type takes precedence over anything inferable from Decider
+  logic or scenarios). The datatype vocabulary (`string · integer · number ·
+  boolean · date`) is promoted to the single normative type vocabulary for entity
+  attributes, data-shape constraints, and payload fields alike.
+- **The wire scalar alphabet (§3.3).** Decider and Projector values are pinned to
+  `boolean`, 64-bit signed `integer`, and `string`; a field declared `number` or
+  `date` degrades to a string on the conformance wire until the alphabet is
+  extended — a stated limitation, and a candidate for a later minor version.
+- **The behavioural-conformance wire protocol (new §6.3.1).** A **conformance
+  runner** reads a JSON array of decision/projection requests on stdin and answers
+  outcomes on stdout, in order, judged by exact ordered-emit equality and
+  full-state projection equality against the model-derived oracle. Passing it *is*
+  the §6.3 behavioural-conformance kind, in any implementation language. Local
+  projection schemas ship at [`preview/conformance/`](preview/conformance/).
+- **The Reify seam (new §5.2).** A second published boundary, peer of the Build
+  seam (§5.1) but inside realisation — between the deterministic oracle and a
+  language backend. Outbound crosses a **versioned reify manifest** (the whole
+  oracle by value); inbound returns a **file plan** (relative, contained paths;
+  `overwrite:false` scaffolds are realiser-owned; the consumer, not the backend,
+  appends the provenance manifest). Any backend consuming the manifest on stdin and
+  answering the file plan on stdout plugs in. Schemas at
+  [`preview/reify/`](preview/reify/).
+- **Realisation declarations and the delegation tier (§4.2).** A How contract MAY
+  declare **realisations** — one per rendered verification shell — carrying a
+  backend, a **delegation tier** (`full` | `oracle-only`), and optionally a target
+  system, namespace, output location, and external-backend command. Construction is
+  delegated by the tier; **judgement never is**.
+- **The canonical REST projection (§4.4).** Commands as `POST /commands/{id}`
+  (payload-schema request, sanctioned events on `200`, invariant-named rejection on
+  `409`), read models with a Projector as `GET /views/{id}`; the generated document
+  is hash-pinned via `x-pf-graph-hash` — the concrete form of the derivation link.
+- **Provenance stamping and the drift gate (new §7.3.1).** Generated artifacts
+  carry the **graph content hash** they derive from — per-file and in a tree-level
+  provenance manifest (`product`, `namespace`, `what_version`, `graph_hash`,
+  `generator`, `generated_files`). The drift gate recomputes the hash and fails on
+  mismatch, turning `realises_version` into a *checkable* claim: two artifacts
+  stamped with the same hash are realisations of the same specification, whatever
+  their languages.
+- **§10 conformance rules.** Rule 6 gains the realisation declarations and the
+  canonical REST projection; rule 9 gains wire-protocol claimability; a new **rule
+  16** covers payload schemas, the wire scalar alphabet, the Reify seam, and the
+  drift gate. Existing rule numbers are unchanged.
+- **§11 (Preview) — the design system as a bound, reify-consumed artifact.** New
+  §11.5: the binding is How (design system by id + version), the manifest gains an
+  implementation half (the *design bundle* — component sources, token values per
+  theme, Atomic-Design templates), coupling becomes a **plan-time gate** (a §11.2
+  coverage gap fails the plan before emit), drift extends to the manifest hash, and
+  a `web` presentation target renders one page per UI step from catalog CIOs and
+  token custom properties.
+
+### Compatibility
+- **Additive only** — v1.7.0 graphs remain valid v1.8.0 graphs; hence the minor bump.
+- Adding payload fields to an existing Command/Event changes the graph content hash
+  (correctly: the wire contract changed), so reified trees report drift until
+  regenerated.
+- The §3.3 alphabet limitation (no decimal/date/list scalars) is now *stated*
+  rather than discovered; extending it will version the conformance protocol and
+  reify manifest (`manifest_version`, schema `$id`s) rather than mutate them.
+
 ## [1.7.0] — 2026-07-02
 
 A minor release that **adopts the new contracts tier** as a dependency. The
