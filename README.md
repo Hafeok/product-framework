@@ -11,8 +11,14 @@ product as three connected, machine-readable models:
   design;
 - **How** the code expresses the What — decisions, principles, patterns,
   contracts, and a repository layout model, owned by engineering;
-- **Delivery** — features and releases as partitions of the What, with "done"
-  expressed as a verifiable predicate.
+- **Delivery** — bringing the What to a verifiable "done", as five connected
+  concepts (§7): **features and releases** as partitions of the What graph;
+  **"done" as a computed predicate** over those partitions; independent
+  **semantic versions** for the What and each How, each bump derivable from what
+  the diff touched; **target versions** — a goal declared as a named set of
+  features, making direction a computed gap rather than a roadmap document; and
+  **provenance stamping** — generated artifacts carry the graph hash they were
+  generated from, so a drift gate can tell when a realisation has gone stale.
 
 It defines **shapes and rules, not any particular product.** You build your
 domain models, your reusable How (archetypes), your verification libraries, and
@@ -49,6 +55,22 @@ only meaning to be authored, imposes a constraint on the How, and is verified
 rather than trusted. The Decider makes behaviour *executable from the model*;
 the UI step makes a screen *buildable from the model*.
 
+## Who may author the What: authoring scopes
+
+Specification has provenance — the things to be specified often already exist,
+completely or partially, in other systems: a Figma file, an Event Modeling
+board, a legacy schema, a Jira board. The framework's intake side treats such
+tools as **bounded co-authors of the What** (§14, Preview): each tool declares
+an **authoring scope** — the What-element kinds it may author, the kinds it
+must not — and enforcement rejects out-of-scope authorship regardless of
+content quality. A **completeness join** across all connected tools then
+reports every required kind as *covered*, *coverable-but-unauthored*, or
+*uncovered* — who may write what, and what still has no author. The contract,
+JSON Schema, both oracles, and a Figma reference scope ship in
+[`authoring-scope/`](authoring-scope/). Authorship is the top of the
+ecosystem's authoring↔reification symmetry — the write-path counterpart of the
+seams that carry the What downstream.
+
 ## Start small: data conformance
 
 The framework's lowest-commitment entry point needs none of the above. A system
@@ -65,10 +87,12 @@ be true; this is where to start (see [§13](docs/product-framework.md#13-data-co
 
 | Path | Contents |
 |---|---|
-| [`docs/product-framework.md`](docs/product-framework.md) | The specification (normative §§1–10; Preview §§11–13). |
+| [`docs/product-framework.md`](docs/product-framework.md) | The specification (normative §§1–10; Preview §§11–14). |
 | [`GUIDE.md`](GUIDE.md) | A non-normative developer workflow — the everyday Intake → What → How → Build loop. |
+| [`authoring-scope/`](authoring-scope/) | The authoring-scope package (§14): JSON Schema, both oracles (enforcement + completeness join, `--self-test`), a Figma reference scope, and the contract doc. |
 | [`examples/checkout/`](examples/checkout/) | A worked example — a complete What carried down the whole chain, doubling as the spec's conformance demonstration. |
-| [`preview/`](preview/) | The render contract (Preview), a working generic renderer, and the **Build-seam schemas** (`build-seam/` — normative JSON Schema for the WorkUnit and VerdictEvent messages an execution framework must support, plus a worked pair). |
+| [`preview/`](preview/) | The render contract (Preview) and a working generic renderer, plus the seam schemas: [`build-seam/`](preview/build-seam/) (WorkUnit / VerdictEvent messages, §5.1), [`codegen/`](preview/codegen/) (CodegenManifest / CodegenFilePlan for the code-generation seam, §5.2), and [`conformance/`](preview/conformance/) (the behavioural-conformance wire protocol, §6.3.1). |
+| [`CONFORMANCE.md`](CONFORMANCE.md) | The framework's own conformance statement against the AI Development Foundations and Contracts. |
 | [`CONTRIBUTING.md`](CONTRIBUTING.md) | How to propose changes and file conformance reports. |
 | [`CODE_OF_CONDUCT.md`](CODE_OF_CONDUCT.md) | Contributor Covenant 2.1. |
 | [`SECURITY.md`](SECURITY.md) | How to report a concern. |
@@ -77,7 +101,7 @@ be true; this is where to start (see [§13](docs/product-framework.md#13-data-co
 | [`LICENSE-docs`](LICENSE-docs) | CC BY 4.0 — applies to the specification text. |
 
 > **Roadmap.** Machine-readable RDF vocabulary and SHACL shapes are planned but
-> not yet part of this cut, and the three Preview profiles (§§11–13) await
+> not yet part of this cut, and the four Preview profiles (§§11–14) await
 > reference adoptions to graduate to normative. See the [CHANGELOG](CHANGELOG.md)
 > for the current scope.
 
