@@ -6,6 +6,36 @@ and the specification aims to follow [Semantic Versioning](https://semver.org/)
 adapted for a standard: the MAJOR version increments on a change that can
 invalidate a previously-conformant instance.
 
+## [1.9.1] — 2026-07-06
+
+A **patch** — a naming clarification that changes no behaviour (§7.3, patch =
+"a renamed concept, a tightened wording"): it renames one seam and reserves a
+word, leaving every graph, message shape, and check identical.
+
+### Changed
+- **§5.2 "the Reify seam" → "the code-generation seam."** "Reify/reification" was
+  overloaded across the ecosystem: it names the AIO→CIO mapping (`reify(AIO,
+  context) → CIO`, §4.5) that the [Interface Framework](https://github.com/Hafeok/interface-framework)'s
+  **Reification Contract** and the [Loom Specification](https://github.com/Hafeok/loom-spec)
+  also own — *and* it had been reused for the §5.2 oracle→language-backend seam,
+  with **both** boundaries billed as "peer of the Build seam." §5.2 is now the
+  **code-generation seam** (it turns the whole oracle into a target-language source
+  tree); **"reify/reification" is now reserved exclusively for AIO→CIO** (§4.5). The
+  "reify manifest" becomes the **codegen manifest**; the preview schemas move from
+  `preview/reify/` to [`preview/codegen/`](preview/codegen/) (`CodegenManifest` /
+  `CodegenFilePlan`); the references in §4.2, §8, §10 (rule 16), §11.5 and §14.5
+  follow.
+- **§11.5 boundary clarified.** The code-generation run **carries** the resolved
+  reification map (`design-system.g.json`) across the seam; it does **not** *perform*
+  the reification — `reify(AIO, context) → CIO` stays the design system's job (§4.5).
+  This removes the double-ownership between the framework's own §5.2 run and the
+  Interface Framework / Loom reification pillar.
+
+### Compatibility
+- **No behavioural change** — no graph, message shape, or check is altered; only
+  names and the `preview/reify/` → `preview/codegen/` path change (Preview schemas,
+  explicitly not frozen). Hence a patch, not a minor.
+
 ## [1.9.0] — 2026-07-06
 
 A minor release — **authoring scopes**, the intake counterpart to the reify layer.

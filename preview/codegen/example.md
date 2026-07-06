@@ -1,17 +1,19 @@
-# Reify seam — worked manifest / file-plan pair
+# Code-generation seam — worked manifest / file-plan pair
 
 Example messages that validate against `manifest.schema.json` and
-`file-plan.schema.json` — the local projections of the **Reify seam** (spec
-§5.2), the boundary between the deterministic oracle and a language backend.
+`file-plan.schema.json` — the local projections of the **code-generation seam** (spec
+§5.2), the boundary between the deterministic oracle and a language backend. (Not
+reification: `reify(AIO,context)→CIO` (§4.5) is a different boundary; this seam
+turns the whole oracle into a target-language source tree.)
 
-**Outbound** crosses the **Reify manifest**: the *whole oracle by value* —
+**Outbound** crosses the **codegen manifest**: the *whole oracle by value* —
 payload schemas, Decider/Projector scenarios, flow chains with every step's
 outcome pre-computed, and screen facts. **Inbound** returns a **file plan**: a
 flat list of files to write. A backend is any process that reads the manifest on
 **stdin** and answers the file plan on **stdout** — a pure function of the
 manifest, calling nothing back.
 
-## 1. Reify manifest fragment (oracle → backend)
+## 1. Codegen manifest fragment (oracle → backend)
 
 Trimmed to one aggregate for readability; a real manifest carries every
 aggregate, flow, and screen.
@@ -91,7 +93,7 @@ Projector's full-state view and each flow step — the backend reproduces them, 
 never runs the oracle. `graph_hash` is the graph state the whole manifest was
 computed from.
 
-## 2. Reify file plan (backend → oracle/consumer)
+## 2. Codegen file plan (backend → oracle/consumer)
 
 ```json
 {
@@ -124,7 +126,7 @@ pattern rejects anything else structurally.
 
 The backend returns *only* file bodies. The **consumer** appends the
 **provenance manifest** (§7.3.1) to what it materialises — recording the
-`graph_hash` the files were reified from — so the **drift gate covers every
+`graph_hash` the files were generated from — so the **drift gate covers every
 backend identically**. A backend cannot opt out of provenance, forge it, or
 implement it differently, because provenance is never the backend's to write. The
 manifest is versioned (`manifest_version: "1"`); a backend that does not

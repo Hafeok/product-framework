@@ -1,8 +1,8 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://hafeok.github.io/product-framework/reify/file-plan.schema.json",
-  "title": "ReifyFilePlan",
-  "description": "The inbound message across the Reify seam (spec §5.2): a language backend's answer to a ReifyManifest. A backend is any process that reads the manifest (the whole oracle by value) on stdin and writes this file plan on stdout — a flat list of files to write, each by value. The consumer materialises the plan. PROVENANCE IS THE CONSUMER'S JOB, NOT THE BACKEND'S: the consumer (not the backend) appends the provenance manifest (§7.3.1) to what it writes, so the drift gate covers EVERY backend identically — a backend cannot opt out of provenance or forge it, because it never writes provenance at all. Paths are RELATIVE and CONTAINED: no absolute path (no leading `/`) and no `..` segment may escape the output root; the `path` pattern enforces this structurally and the consumer rejects any plan that violates it. Self-contained: no cross-file `$ref`.",
+  "$id": "https://hafeok.github.io/product-framework/codegen/file-plan.schema.json",
+  "title": "CodegenFilePlan",
+  "description": "The inbound message across the code-generation seam (spec §5.2): a language backend's answer to a CodegenManifest. A backend is any process that reads the manifest (the whole oracle by value) on stdin and writes this file plan on stdout — a flat list of files to write, each by value. The consumer materialises the plan. PROVENANCE IS THE CONSUMER'S JOB, NOT THE BACKEND'S: the consumer (not the backend) appends the provenance manifest (§7.3.1) to what it writes, so the drift gate covers EVERY backend identically — a backend cannot opt out of provenance or forge it, because it never writes provenance at all. Paths are RELATIVE and CONTAINED: no absolute path (no leading `/`) and no `..` segment may escape the output root; the `path` pattern enforces this structurally and the consumer rejects any plan that violates it. Self-contained: no cross-file `$ref`.",
   "type": "object",
   "additionalProperties": false,
   "required": ["files"],

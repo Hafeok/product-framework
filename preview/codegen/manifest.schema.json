@@ -1,8 +1,8 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://hafeok.github.io/product-framework/reify/manifest.schema.json",
-  "title": "ReifyManifest",
-  "description": "The outbound message across the Reify seam (spec §5.2): the boundary between the deterministic oracle and a language backend. The manifest carries the WHOLE ORACLE BY VALUE — every fact a backend needs to emit code is inlined, resolved, and pre-computed, so a backend is a pure function of the manifest and calls nothing back. A backend is any process that consumes a manifest on stdin and answers a ReifyFilePlan on stdout. What crosses, by value: per-aggregate payload schemas (declared §3.2 fields taking PRECEDENCE over inference); Decider and Projector scenarios (the behavioural oracle, §6.3.1); flow chains with EVERY step's outcome pre-computed by the oracle (§3.4); screen facts — surfaces, offers, non-waived degraded states, and a present-state fixture already folded by the relevant Projector (§3.4); and the graph content hash the manifest was computed from (`graph_hash`). Payload values obey the wire scalar alphabet (§3.3): `boolean`, 64-bit signed `integer`, `string`; a field declared `number` or `date` (§3.2) travels AS A STRING. Field names are snake_case to match the reify family. Versioned via `manifest_version` so a future shape change is a version bump, not a silent break. Self-contained: no cross-file `$ref`; every reusable shape inlines in `$defs`.",
+  "$id": "https://hafeok.github.io/product-framework/codegen/manifest.schema.json",
+  "title": "CodegenManifest",
+  "description": "The outbound message across the code-generation seam (spec §5.2): the boundary between the deterministic oracle and a language backend. NOT reification — reify(AIO,context)→CIO (§4.5) is a different boundary; this seam turns the whole oracle into a target-language source tree. The manifest carries the WHOLE ORACLE BY VALUE — every fact a backend needs to emit code is inlined, resolved, and pre-computed, so a backend is a pure function of the manifest and calls nothing back. A backend is any process that consumes a manifest on stdin and answers a CodegenFilePlan on stdout. What crosses, by value: per-aggregate payload schemas (declared §3.2 fields taking PRECEDENCE over inference); Decider and Projector scenarios (the behavioural oracle, §6.3.1); flow chains with EVERY step's outcome pre-computed by the oracle (§3.4); screen facts — surfaces, offers, non-waived degraded states, and a present-state fixture already folded by the relevant Projector (§3.4); and the graph content hash the manifest was computed from (`graph_hash`). Payload values obey the wire scalar alphabet (§3.3): `boolean`, 64-bit signed `integer`, `string`; a field declared `number` or `date` (§3.2) travels AS A STRING. Field names are snake_case to match the codegen family. Versioned via `manifest_version` so a future shape change is a version bump, not a silent break. Self-contained: no cross-file `$ref`; every reusable shape inlines in `$defs`.",
   "type": "object",
   "additionalProperties": false,
   "required": [
@@ -17,7 +17,7 @@
   "properties": {
     "manifest_version": {
       "const": "1",
-      "description": "Reify manifest wire version. Const \"1\" for this projection. A backend MUST reject a manifest whose version it does not understand rather than guess — the version gates the whole shape, so a bump is an explicit, non-silent break."
+      "description": "Codegen manifest wire version. Const \"1\" for this projection. A backend MUST reject a manifest whose version it does not understand rather than guess — the version gates the whole shape, so a bump is an explicit, non-silent break."
     },
     "graph_hash": {
       "type": "string",
