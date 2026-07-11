@@ -36,6 +36,22 @@ and traceable**, so the description can drive generation, gate verification, and
 explain itself. It rests on one chain: *reproducibility → measurement →
 improvement.*
 
+## The ledger it keeps
+
+Every decision that governs a realisation gets made — the only question is by
+whom, and whether it is written down. The framework can be read as one ledger
+(§2.2 of the spec): a governing decision is **encoded** in the graph (decided
+once, replayed downstream), **mechanically verified** (delegated, but gated by
+an encoded criterion — the same specification in criterion form), held as
+**declared judgment** (decided per run by a named, accountable person — an
+attestation, never an ambient convention), or it **escapes** — decided by
+nobody, shipped as defect exposure. Escape cannot be declared away, only
+measured: the intent-reliance and data-divergence rates are its meters. The
+same accounting prices the framework's boundaries (§5.3): every seam it
+publishes — Build, code generation, behavioural conformance, authoring — is a
+manufactured set of boundary decisions, encoded as a contract precisely so they
+are never judged ad hoc at the boundary or escaped as integration defects.
+
 ## The symmetry at its core
 
 Two kinds of thing a system does — *decide* and *display* — are specified the

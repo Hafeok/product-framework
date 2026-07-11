@@ -35,8 +35,11 @@ This generalises a pattern that already runs through Decision-Driven Design:
   exactly as What/How fusion disqualifies a discovery record however complete it is.
 - It re-characterises the **Polanyi floor** declaratively. A tool's `excluded` list
   is its Polanyi boundary written down: the What-elements this surface structurally
-  cannot carry. The empirical annotation-needed list then splits along that
-  boundary (§4).
+  cannot carry. And it is, precisely, a **channel floor**, not an intrinsic one —
+  the knowledge is encodable, *this surface* just cannot carry it — which is
+  exactly why the §4 gap split can route it to a sanctioned author instead of
+  declaring it unencodable. The empirical annotation-needed list then splits along
+  that boundary (§4).
 
 ## 2. The contract
 

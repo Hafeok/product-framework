@@ -6,6 +6,79 @@ and the specification aims to follow [Semantic Versioning](https://semver.org/)
 adapted for a standard: the MAJOR version increments on a change that can
 invalidate a previously-conformant instance.
 
+## [1.10.0] — 2026-07-11
+
+A minor release — **the allocation reading and the seam ledger**. It catches the
+specification up with the rewritten core of
+[Decision-Driven Design](https://github.com/Hafeok/decision-driven-design) (the
+knowability arc — conservation of specification, escape under capacity pressure,
+context length as the actor's allocation budget — and the new composition
+apparatus: seam demand under decomposition). Per the ecosystem's dependency
+discipline the framework continues to conform to the **foundation only**; the new
+material lands in the framework's **own vocabulary**, as two informative sections
+plus one normative pre-emit check, with peer pointers marked informative.
+
+### Added
+- **§2.2 The allocation reading (informative).** The framework read as one
+  ledger: every governing decision lives in exactly one of four places —
+  **encoded** (the graph, §§3–4; specification in *constraint form*),
+  **mechanically verified** (every §6 gate; the *same* specification in
+  *criterion form*, which is why a tighter prompt and a tighter gate are
+  interchangeable allocations of one demand), **declared judgment** (attestations
+  §3.2.3, `needs-verdict`/`escalate`, waived states — always attributed, never
+  ambient), or **escaped** (decided by nobody; metered, not tolerated, by the
+  intent-reliance rate §3.2.1, the data-divergence rate §3.1, and the derivation
+  contract's undeclared-decision flags). Names the framework's posture toward
+  model failure: an invented convention in a realised artifact is an **escaped
+  decision surfaced as output**, and the remedy is allocation — model it, gate
+  it, or assign it — never exhortation.
+- **§5.3 Seam demand — why every seam is a contract (informative).** The
+  accounting behind the 1.8.0 organising principle ("every seam is a protocol,
+  not a linkage"): splitting work **manufactures boundary decisions** no
+  undivided author faced, and each is encoded (an interface contract), judged
+  per run at the boundary, or escapes as an integration defect — never free. The
+  four published boundaries (Build §5.1, code generation §5.2, behavioural
+  conformance §6.3.1, authoring §14) tabled as a priced seam ledger;
+  producer-owns-the-seam (RFC 0001) given its economics (encode once vs. staff
+  the boundary per run — and the contract is simultaneously a token
+  *compression* of what crosses); the **coherence bar** (§6.1) named as the
+  net-positive condition on any split.
+- **The capacity check (§5, §5.1, §10 rule 8) — normative.** The frozen bundle
+  must **fit the pinned binding's capacity** — for a model actor, its context
+  window, with headroom for the work itself — checked **before emit**, on the
+  specification side, as a peer of the tier-homogeneity check. For a model
+  actor the window is the unit's entire working capacity at fire time: frozen
+  Context, per-cell Schemas and Prompts, and the reasoning room all compete for
+  it, and of the four stores only *escape* costs no window — so an oversized
+  unit is an invitation to escape, a decomposition defect whose remedy is
+  further decomposition. Also noted: §6 verifications run on the *output*,
+  outside the window, so moving demand from prompt-side instruction to
+  criterion-side verification relieves capacity while staying on the ledger.
+
+### Changed
+- **§3.5** gains a closing note distinguishing the *kinds* of floor the
+  framework declares: a named-algorithm primitive is a limit on **derivation**,
+  not on **encoding** (the primitive stays fully encoded — reference, I/O
+  contract, oracle); an `outside-scope` finding (§14) is a **channel** limit,
+  routed to a sanctioned author. Floors are mapped, never asserted, and the four
+  declared-residue moves (§3.5 primitive, §3.2.1 waiver, §3.2.3 attestation,
+  §14 gap split) are named as the same move at four boundaries.
+- **§6.1** coherence bar cross-references §5.3 (the bar as the check that a
+  split's gain exceeded its manufactured seam).
+- **`authoring-scope/docs/authoring-scopes.md`** sharpens its Polanyi-floor
+  paragraph with the same distinction: a tool's `excluded` list is a *channel*
+  floor — encodable knowledge this surface cannot carry, hence routable — not a
+  claim that the knowledge is unencodable.
+
+### Compatibility
+- **Additive.** v1.9.1 graphs remain valid v1.10.0 graphs; §2.2 and §5.3 are
+  informative and add no obligation.
+- The **capacity check** makes explicit what §5.1's executability floor already
+  implied — a unit whose bundle cannot fit its pinned binding could never
+  execute ("every unit is executable"); stating the pre-emit check follows the
+  1.7.0 precedent of the tier-homogeneity check. Producers that already emit
+  executable units are unaffected.
+
 ## [1.9.1] — 2026-07-06
 
 A **patch** — a naming clarification that changes no behaviour (§7.3, patch =
