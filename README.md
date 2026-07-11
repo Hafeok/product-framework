@@ -7,10 +7,12 @@ product as three connected, machine-readable models:
 
 - **What** the system is and does — one or more **systems** (name, kind,
   platform reach), a **domain model** (structure *and* data, with reference data
-  as part of the What), and an **event model** (behaviour), owned by product and
-  design;
-- **How** the code expresses the What — decisions, principles, patterns,
-  contracts, and a repository layout model, owned by engineering;
+  as part of the What), an **event model** (behaviour), and **actors with
+  declared access** (authorization as checkable invariants and grants, never a
+  permissions table beside the model), owned by product and design;
+- **How** the code expresses the What — a reusable **blueprint** instantiated as
+  concrete **DeployableUnits** (per environment), decisions, principles,
+  patterns, contracts, and a repository layout model, owned by engineering;
 - **Delivery** — bringing the What to a verifiable "done", as five connected
   concepts (§7): **features and releases** as partitions of the What graph;
   **"done" as a computed predicate** over those partitions; independent
@@ -21,7 +23,7 @@ product as three connected, machine-readable models:
   generated from, so a drift gate can tell when a realisation has gone stale.
 
 It defines **shapes and rules, not any particular product.** You build your
-domain models, your reusable How (archetypes), your verification libraries, and
+domain models, your reusable How (blueprints), your verification libraries, and
 your tooling *on top of* the framework — and adopting it never requires
 disclosing them.
 
@@ -107,7 +109,7 @@ be true; this is where to start (see [§13](docs/product-framework.md#13-data-co
 | [`GUIDE.md`](GUIDE.md) | A non-normative developer workflow — the everyday Intake → What → How → Build loop. |
 | [`authoring-scope/`](authoring-scope/) | The authoring-scope package (§14): JSON Schema, both oracles (enforcement + completeness join, `--self-test`), a Figma reference scope, and the contract doc. |
 | [`examples/checkout/`](examples/checkout/) | A worked example — a complete What carried down the whole chain, doubling as the spec's conformance demonstration. |
-| [`preview/`](preview/) | The render contract (Preview) and a working generic renderer, plus the seam schemas: [`build-seam/`](preview/build-seam/) (WorkUnit / VerdictEvent messages, §5.1), [`codegen/`](preview/codegen/) (CodegenManifest / CodegenFilePlan for the code-generation seam, §5.2), and [`conformance/`](preview/conformance/) (the behavioural-conformance wire protocol, §6.3.1). |
+| [`preview/`](preview/) | The render contract (Preview) and a working generic renderer, an [interactive concept map](preview/graph.html) of the specification graph (v1.6.0 vocabulary), plus the seam schemas: [`build-seam/`](preview/build-seam/) (WorkUnit / VerdictEvent messages, §5.1), [`codegen/`](preview/codegen/) (CodegenManifest / CodegenFilePlan for the code-generation seam, §5.2), and [`conformance/`](preview/conformance/) (the behavioural-conformance wire protocol, §6.3.1). |
 | [`CONFORMANCE.md`](CONFORMANCE.md) | The framework's own conformance statement against the AI Development Foundations and Contracts. |
 | [`CONTRIBUTING.md`](CONTRIBUTING.md) | How to propose changes and file conformance reports. |
 | [`CODE_OF_CONDUCT.md`](CODE_OF_CONDUCT.md) | Contributor Covenant 2.1. |

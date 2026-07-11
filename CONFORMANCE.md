@@ -17,7 +17,7 @@
 | Field | Value |
 |-------|-------|
 | **Name** | The Product Framework |
-| **Version** | 1.10.0 |
+| **Version** | 1.11.0 |
 | **Repository** | https://github.com/Hafeok/product-framework |
 | **License** | Apache-2.0 (shapes, schemas, code) · CC BY 4.0 (specification text) |
 | **Maintainer** | Emil ([@Hafeok](https://github.com/Hafeok)) |
@@ -86,7 +86,7 @@ and [Contracts Layer — Producer Conformance](#contracts-layer--producer-confor
 |---|---|---|
 | Identity — single unique name | ☑ | Each **system** is a first-class node with a name, used consistently downstream (§3.2.5, §10 rule 2) |
 | Purpose — problem / who / why | ☑ | §1; each system carries a purpose (§3.2.5) |
-| Actors — every person/role/system, what each may and may not do | ☑ | Triggers typed by source (user / external / automated) (§3.2.0); what an actor *may not* do is the Decider's reachable rejections (§3.3, Decider justification §6.3) |
+| Actors — every person/role/system, what each may and may not do | ☑ | Actors are first-class nodes with a kind (user / system / developer) and roles (§3.7); Triggers typed by source (§3.2.0); what an actor *may not* do is a declared access enforced where the capability lives — a Decider rejection keyed on the actor, an edge grant, an operational permission (§3.7; access conformance §6.3) |
 | Behaviors — initiator, precondition, postcondition, **and unhappy path** | ☑ | Event model patterns (§3.2.0); the Decider derives commands/events/evolution and **must reject** ≥1 invariant — the unhappy path (§3.3) |
 | Boundaries — in/out scope; out-of-scope **non-empty** | ◐ | In-scope is derived (feature footprints, allowlist); framework-level scope explicit (§1). A mandatory non-empty out-of-scope list per What is not enforced — see Known gaps |
 | Data — every entity CRUD, with owner and lifecycle | ☑ | Domain model structure + data (§3.1); events `change` entities (§3.2, §9); reference vs production data distinguished (§10 rule 3) |

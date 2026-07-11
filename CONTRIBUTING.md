@@ -23,7 +23,7 @@ The framework defines **shapes and rules only**. Keep contributions on the right
 side of the open/closed line ([§1](docs/product-framework.md#1-purpose-and-scope)):
 
 - The framework is the *empty form and its rules*. Specific products,
-  archetypes, patterns, Decider logic, and the content of verifications are built
+  blueprints, patterns, Decider logic, and the content of verifications are built
   *on* the framework — they do not belong in the spec.
 - A proposed rule should **earn its place**: it must be checkable, and it should
   protect a stated property. A rule no instance needs is documentation, not a

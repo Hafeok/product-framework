@@ -1,0 +1,509 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The Product Framework — interactive graph</title>
+<style>
+  :root{
+    --bg:#0e0f12; --panel:#16181d; --panel2:#1c1f26; --line:#2a2e37;
+    --ink:#e8e6df; --ink2:#a8a69c; --ink3:#6f6e68;
+    --purple:#7f77dd; --purple-b:#3c3489; --purple-d:#1a1730;
+    --teal:#1d9e75; --teal-b:#0f6e56; --teal-d:#08231d;
+    --coral:#d85a30; --coral-b:#993c1d; --coral-d:#2b1209;
+    --blue:#378add; --blue-b:#185fa5; --blue-d:#0a2236;
+    --amber:#ba7517; --amber-b:#854f0b; --amber-d:#2a1c05;
+    --green:#639922; --green-b:#3b6d11; --green-d:#16240a;
+    --pink:#d4537e; --pink-b:#993556; --pink-d:#2c0f1b;
+    --gray:#888780; --gray-b:#5f5e5a; --gray-d:#222;
+    --radius:10px;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;height:100%;background:var(--bg);color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    -webkit-font-smoothing:antialiased}
+  a{color:var(--blue)}
+  .app{display:flex;flex-direction:column;height:100%}
+  header{padding:14px 20px;border-bottom:1px solid var(--line);display:flex;
+    align-items:baseline;gap:14px;flex-wrap:wrap}
+  header h1{font-size:17px;font-weight:600;margin:0;letter-spacing:.2px}
+  header .sub{font-size:13px;color:var(--ink2)}
+  header .ver{margin-left:auto;font-size:12px;color:var(--ink3);
+    border:1px solid var(--line);border-radius:20px;padding:3px 10px}
+  .legend{display:flex;gap:14px;flex-wrap:wrap;padding:10px 20px;
+    border-bottom:1px solid var(--line);font-size:12px;color:var(--ink2)}
+  .legend span{display:inline-flex;align-items:center;gap:6px}
+  .dot{width:10px;height:10px;border-radius:3px;display:inline-block}
+  .main{flex:1;display:flex;min-height:0}
+  .canvas{flex:1;overflow:auto;padding:8px 12px 40px}
+  .panel{width:380px;flex-shrink:0;border-left:1px solid var(--line);
+    background:var(--panel);overflow:auto;padding:22px 22px 60px}
+  @media(max-width:820px){
+    .main{flex-direction:column}
+    .panel{width:auto;border-left:none;border-top:1px solid var(--line);max-height:46%}
+  }
+  /* layer band */
+  .band{margin:14px 6px;border:1px solid var(--line);border-radius:14px;
+    background:var(--panel);padding:12px 12px 16px}
+  .band > .band-h{display:flex;align-items:baseline;gap:10px;margin:2px 4px 12px}
+  .band-h .k{font-size:13px;font-weight:600;letter-spacing:.3px}
+  .band-h .d{font-size:12px;color:var(--ink2)}
+  .row{display:flex;flex-wrap:wrap;gap:10px}
+  .sub-band{border:1px dashed var(--line);border-radius:12px;padding:10px;flex:1;min-width:240px}
+  .sub-band .sh{font-size:11px;text-transform:uppercase;letter-spacing:.7px;
+    color:var(--ink3);margin:0 2px 8px}
+  /* node */
+  .node{appearance:none;border:1px solid var(--line);background:var(--panel2);
+    color:var(--ink);border-radius:var(--radius);padding:9px 12px;cursor:pointer;
+    text-align:left;font-size:13px;line-height:1.25;transition:.12s;min-width:130px;
+    display:flex;flex-direction:column;gap:2px}
+  .node:hover{border-color:var(--ink3);transform:translateY(-1px)}
+  .node .nt{font-weight:600}
+  .node .ns{font-size:11px;color:var(--ink2)}
+  .node.sel{outline:2px solid var(--ink);outline-offset:1px}
+  .node[data-c=purple]{background:var(--purple-d);border-color:var(--purple-b)}
+  .node[data-c=purple] .ns{color:#cec9f0}
+  .node[data-c=teal]{background:var(--teal-d);border-color:var(--teal-b)}
+  .node[data-c=teal] .ns{color:#9fe1cb}
+  .node[data-c=coral]{background:var(--coral-d);border-color:var(--coral-b)}
+  .node[data-c=coral] .ns{color:#f0997b}
+  .node[data-c=blue]{background:var(--blue-d);border-color:var(--blue-b)}
+  .node[data-c=blue] .ns{color:#85b7eb}
+  .node[data-c=amber]{background:var(--amber-d);border-color:var(--amber-b)}
+  .node[data-c=amber] .ns{color:#fac07a}
+  .node[data-c=green]{background:var(--green-d);border-color:var(--green-b)}
+  .node[data-c=green] .ns{color:#aecb7e}
+  .node[data-c=pink]{background:var(--pink-d);border-color:var(--pink-b)}
+  .node[data-c=pink] .ns{color:#edaac0}
+  .node[data-c=gray]{background:var(--gray-d);border-color:var(--gray-b)}
+  .node[data-c=gray] .ns{color:#b4b2a9}
+  /* arrows note */
+  .flow-note{font-size:11px;color:var(--ink3);text-align:center;margin:2px 0}
+  /* panel */
+  .panel .ph{font-size:11px;text-transform:uppercase;letter-spacing:.8px;color:var(--ink3)}
+  .panel h2{font-size:19px;margin:6px 0 4px;font-weight:600}
+  .panel .tag{display:inline-block;font-size:11px;border-radius:20px;padding:2px 9px;
+    margin:0 0 14px;border:1px solid var(--line);color:var(--ink2)}
+  .panel p{font-size:13.5px;line-height:1.62;color:var(--ink);margin:0 0 12px}
+  .panel .kv{font-size:12.5px;color:var(--ink2);line-height:1.6;margin:0 0 12px}
+  .panel .lbl{font-size:11px;text-transform:uppercase;letter-spacing:.6px;
+    color:var(--ink3);margin:18px 0 7px}
+  .panel code{background:var(--panel2);border:1px solid var(--line);border-radius:5px;
+    padding:1px 5px;font-size:12px;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;
+    color:#c7d7ea}
+  .chips{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 4px}
+  .chip{font-size:12px;border:1px solid var(--line);border-radius:18px;padding:4px 10px;
+    background:var(--panel2);color:var(--ink2);cursor:pointer;transition:.12s}
+  .chip:hover{border-color:var(--ink3);color:var(--ink)}
+  .empty{color:var(--ink3);font-size:13px;line-height:1.6;margin-top:30px}
+  .empty b{color:var(--ink2);font-weight:600}
+  .seam{font-size:11px;color:var(--amber);border:1px solid var(--amber-b);
+    background:var(--amber-d);border-radius:6px;padding:2px 7px;display:inline-block;margin:0 0 12px}
+  kbd{font-size:11px;border:1px solid var(--line);border-bottom-width:2px;border-radius:4px;
+    padding:1px 5px;color:var(--ink2);background:var(--panel2)}
+</style>
+</head>
+<body>
+<div class="app">
+  <header>
+    <h1>The Product Framework</h1>
+    <span class="sub">an interactive map of the specification graph — click any part</span>
+    <span class="ver">v1.6.0 vocabulary · What · How · Verify · Deliver — concepts added since (payload schemas §3.2, actors &amp; access §3.7, blueprint/DeployableUnit §4, the code-generation seam §5.2, authoring scopes §14) are not yet drawn</span>
+  </header>
+  <div class="legend" id="legend"></div>
+  <div class="main">
+    <div class="canvas" id="canvas"></div>
+    <aside class="panel" id="panel">
+      <div class="empty" id="empty">
+        <p style="font-size:14px;color:var(--ink2);line-height:1.6">
+        This is the whole framework as one graph. <b>Everything is one RDF graph</b> —
+        "describe this system" is a query, not four separate documents.</p>
+        <p>Click any node to read what it is, what it derives from, and what it
+        connects to. The four bands are the spec's four parts:</p>
+        <p><b>What</b> — the meaning (system, domain, events, UI).<br>
+        <b>How</b> — the realisation.<br>
+        <b>Verify</b> — the conformance checks.<br>
+        <b>Deliver</b> — features, versions, direction.</p>
+        <p style="color:var(--ink3)">Tip: the amber outline marks a <b>seam</b> —
+        a boundary the framework defines but does not cross.</p>
+      </div>
+      <div id="detail" style="display:none"></div>
+    </aside>
+  </div>
+</div>
+<script>
+/* ---------- the graph data: every concept in the framework ---------- */
+const C = { /* colour key */
+  purple:"System & delivery shell", teal:"Domain", coral:"Behaviour",
+  blue:"UI", amber:"How / realisation", green:"Reference data",
+  pink:"Verification", gray:"Foundation"
+};
+
+const N = {
+  /* ----- WHAT: product (root) ----- */
+  product:{c:"purple",t:"Product",s:"§3.0 — the root, the boundary",
+    sec:"What",
+    d:"The thing being built: the owner of the domains and systems that compose it. It carries little of its own — a name and purpose — because its job is ownership and boundary, not behaviour. It owns one or more domains (the shared meaning and rules) and one or more systems (the surfaces).",
+    kv:"The dividing line: the DOMAIN owns meaning and rules; a SYSTEM owns surface and journey. Test — if two systems would disagree it's system-level; if they must agree it's domain-level. The product's boundary is exactly the domains and systems it owns.",
+    df:[], to:["domain","system","journey","target","quality"]},
+
+  /* ----- WHAT: system shell ----- */
+  journey:{c:"purple",t:"Journey",s:"§3.0.1 — a flow that spans systems",
+    sec:"What",
+    d:"A product-level, derived composition: a declared path through single-system flows, linked at crossings, where every crossing is a Translation. It owns nothing — it references flows and Translations that already exist — so it adds end-to-end visibility without re-coupling the systems. Owned by the product, because only the product sees across its systems.",
+    kv:"Every crossing IS a Translation (§3.2.0), or it's a finding (journey conformance). A journey is to cross-system process what a feature is to single-system behaviour: a derived, referenced, checkable subgraph. Value-anchoring and blast-radius now extend across systems.",
+    df:["product","patterns"], to:["pagegraph","journeyconf"]},
+  system:{c:"purple",t:"System",s:"§3.2.5 — a surface over domains",
+    sec:"What",
+    d:"One way a product is used. The product owns it; it references whole domains whose meaning and rules it surfaces, and owns the journey — the page graph and flows — over that shared behaviour. Name, kind, purpose, referenced domains, target platforms/classes.",
+    kv:"Two systems referencing one domain get the SAME Deciders, invariants and events for free — they differ only in surface (flows, pages, platform). A flow arranges domain behaviour into a journey; it doesn't own the behaviour.",
+    df:["product","domain"], to:["pagegraph","quality","iclass","platform"]},
+  platform:{c:"purple",t:"Platform & context of use",s:"§3.2.2 — a context dimension",
+    sec:"What",
+    d:"Where the system runs — iOS, Android, web, desktop — modelled as a context-of-use dimension, not baked into the What. The same abstract interaction reifies differently per platform; 'both' just means two declared contexts.",
+    kv:"Form factor, modality and platform are all context dimensions. The design system must reify into every declared one.",
+    df:["system"], to:["iclass","aio","reify"]},
+  iclass:{c:"purple",t:"Interaction class (GUI / TUI)",s:"§3.2.2 — the gating dimension",
+    sec:"What",
+    d:"The senior context dimension: it gates which others apply. GUI brings form factor (phone/tablet/desktop) and pointer/touch into scope. TUI rules form factor out and brings terminal capabilities instead — grid size, colour depth, glyph set, keys.",
+    kv:"The AIO vocabulary is unchanged across classes: a single-select is a touch control on a phone and an arrow-key list in a terminal. One What, realised over substrates as different as a phone screen and an SSH session.",
+    df:["system"], to:["aio","reify"]},
+  versions:{c:"purple",t:"Versions & direction",s:"§7.3 — the time axis",
+    sec:"Deliver",seam:false,
+    d:"The What and How carry independent semantic versions that reference each other. A How declares which What-version it realises and can iterate beneath a fixed What. Each bump is derivable from what the graph diff touched — behaviour, an additive slice, or realisation only.",
+    kv:"What-major = behaviour change · What-minor = additive flow · What-patch = clarification. How-major = architecture change · How-minor/patch = same What realised differently.",
+    df:["system"], to:["target","feature"]},
+  target:{c:"purple",t:"Target version & direction",s:"§7.3 — where it's going",
+    sec:"Deliver",
+    d:"A goal is a declared future partition of the graph — a named set of features, some not yet realised. Direction is the computed gap: distance(target) = the unrealised features in its partition. The roadmap is a query over the graph, never prose that drifts.",
+    kv:"distance(target) = { feature ∈ partition : not feature_done(feature) }. If a goal can't be written as a named set of features, it isn't specified yet.",
+    df:["versions","feature"], to:[]},
+  quality:{c:"purple",t:"Quality demands",s:"§3.6 — non-functional, made checkable",
+    sec:"What",
+    d:"Performance, capacity, availability, security, residency — never prose. Exactly two kinds, distinguished by HOW they're checked. A demand that can be neither measured nor inspected is not specified yet.",
+    kv:"Runtime bound → measured continuously vs telemetry (the data-conformance pattern over operational data). Architectural constraint → checked at build time against the architecture (residency, security). Located, not listed: system-wide on the system, scoped on the flow/step.",
+    df:["system"], to:["runtimecheck","dataconf"]},
+
+  /* ----- WHAT: domain ----- */
+  domain:{c:"teal",t:"Domain model",s:"§3.1 — meaning + rules, owned by product",
+    sec:"What",
+    d:"Owned by the product, referenced by the systems that use it. The home of meaning AND rules: what concepts mean, how they relate, and how they behave — entities, structure, data, invariants, AND the events/Deciders/Projectors that act on them. Behaviour lives here, not in a system, because a rule is true wherever its concept is used.",
+    kv:"Bounded contexts, not one flat model. A system references whole domains; finer slicing is by bounded context inside a domain. Two systems over one domain share its rules identically.",
+    df:["product"], to:["structure","data","events","decider","projector"]},
+  structure:{c:"teal",t:"Structure (the shapes)",s:"§3.1 — the dev/DDD sense",
+    sec:"What",
+    d:"What constitutes a valid model: entity types, relations, cardinalities, invariants — expressed as validatable shapes (SHACL is the reference). This is what developers mean by 'domain model'. A diagram alone is not conformant: it can neither generate nor validate.",
+    kv:"An entity has identity that persists while its attributes change. A value object is defined wholly by its attributes and is immutable. An aggregate carries exactly its invariant-bearing state — see state justification.",
+    df:["domain"], to:["refdata","invariant","decider"]},
+  data:{c:"teal",t:"Data",s:"§3.1 — the data-person sense",
+    sec:"What",
+    d:"The actual populated facts: which products exist, what they're called, the real rows. Data practitioners work from this side and catch what structure can't see — a field null 90% of the time, an undeclared enum value, two 'distinct' entities that are one row. Split by relationship to the model into reference data and production data.",
+    kv:"The test: if changing a datum changes what the system MEANS, it's reference data (part of the What). If it's just more rows of the same kind, it's production data (the oracle).",
+    df:["domain"], to:["refdata","proddata","dataconf"]},
+  refdata:{c:"green",t:"Reference data",s:"§3.1 — constitutive, part of the What",
+    sec:"What",
+    d:"Instance data the behaviour depends on: valid shipping methods, tax categories, the product taxonomy, accepted currencies. It's IN the What because the model references it — a single-select draws its options from here, and 'tax category must be one of the set' is checkable only because the set is modelled. Versioned and governed like the rest of the What.",
+    kv:"Constitutive: remove a shipping method and a behaviour becomes impossible. That's the test for What-membership.",
+    df:["structure","data"], to:["aio","invariant"]},
+  proddata:{c:"amber",t:"Production data",s:"§3.1 — the validation oracle",
+    sec:"What",
+    d:"The live entities — 4,200 real products, real orders. NOT specification; they're populated facts the running system holds. But they serve as the oracle the structure is checked against. 'Does real data conform to the declared shapes?' is a verification that catches model defects nothing else will.",
+    kv:"Just more rows = production data. It lives in the running system, not the What — but it can indict the What via data conformance.",
+    df:["data"], to:["dataconf"]},
+  invariant:{c:"teal",t:"Invariant",s:"§3.1 — a machine-checkable rule",
+    sec:"What",
+    d:"A constraint declared ONCE in the domain model, in the language of the concepts it constrains (e.g. refund_total ≤ paid_total). From this single declaration the framework derives many enforcement points — none of which re-states the rule.",
+    kv:"One invariant → a Decider rejection (prospective, at the boundary) + a simulation + a data-conformance shape (retrospective, continuous) + a UI constraint. One declaration, N derivations, checked to agree.",
+    df:["structure"], to:["decider","dataconf"]},
+
+  /* ----- WHAT: events / behaviour ----- */
+  events:{c:"coral",t:"Event model",s:"§3.2 — behaviour over the domain",
+    sec:"What",
+    d:"What happens, modelled as four building blocks wired into four patterns. Every event changes a real domain entity; behaviour may not reference structure that doesn't exist.",
+    kv:"Blocks: Trigger, Command, Event, View. Patterns name the topology; the Decider and Projector supply the executable semantics inside.",
+    df:["domain"], to:["trigger","command","event","view","patterns","decider","projector"]},
+  trigger:{c:"coral",t:"Trigger",s:"§3.2.0 — what issues a command",
+    sec:"What",
+    d:"What initiates a command, with exactly one of three sources: a user (through a UI step), an external caller (an API), or an automated process (a step reading a View). Generalising 'what issues a command' into one block is what makes automation and cross-system communication expressible as patterns rather than special cases.",
+    kv:"A robot and a user are the same shape — they differ only in trigger source.",
+    df:["events"], to:["command","uistep","patterns"]},
+  command:{c:"coral",t:"Command",s:"§3.2.0 — intention to change state",
+    sec:"What",
+    d:"An intention to change state, carrying its parameters. A command targets an aggregate and is decided by that aggregate's Decider, which accepts it into events or rejects it.",
+    df:["trigger"], to:["decider","event"]},
+  event:{c:"coral",t:"Event",s:"§3.2.0 — a recorded fact",
+    sec:"What",
+    d:"A business fact that happened and was recorded — the irreducible unit of truth. Everything else is derived from events. Named in the past tense, in the ubiquitous language, carrying the data the fact entails.",
+    df:["command"], to:["view","projector"]},
+  view:{c:"coral",t:"View",s:"§3.2.0 — a read model",
+    sec:"What",
+    d:"A query that reads, interprets and curates already-recorded events for a consumer (a UI step, a report, or an automated Trigger). Its defining honesty: a View can present only information some event already carries.",
+    kv:"If a View needs a field no event supplies, the model is incomplete — surfaced before any code by the Projector's event-coverage check.",
+    df:["event"], to:["projector","uistep"]},
+  patterns:{c:"coral",t:"The four patterns",s:"§3.2.0 — named, checkable shapes",
+    sec:"What",
+    d:"The blocks compose into exactly four shapes, each a checkable pattern. Command and View are the everyday shapes (already enforced under other names). Automation and Translation are the genuinely new capabilities.",
+    kv:"Command: Trigger→Command→Event. View: Event→View. Automation: Event→View→automated Trigger→Command→Event (self-acting behaviour; the trigger carries no business logic). Translation: read one source system's events → Command into another (the only sanctioned cross-system channel).",
+    df:["trigger","view"], to:["patternconf"]},
+  decider:{c:"coral",t:"Decider",s:"§3.3 — executable behaviour",
+    sec:"What",
+    d:"Where the business rules live — and more. decide(state, command) → accepted events | rejected reason. The rejections ARE the invariants; the accept side says what results. Its signature is derived from the model; only the decision logic is authored. Simulated sound and complete before any code.",
+    kv:"An aggregate carries exactly the invariant-bearing state its Deciders read at decision time (state justification). Every Decider must have ≥1 reachable rejection, or it's a finding (Decider justification). A creation Decider reads no prior state yet still rejects.",
+    df:["structure","command","invariant"], to:["projector","behavsim","behavconf"]},
+  projector:{c:"coral",t:"Projector",s:"§3.4 — executable read model",
+    sec:"What",
+    d:"The evolve/fold half, symmetric to the Decider: it folds events into a view's state. 'A page's data IS its projection' bottoms out in a name until the projection computes — the Projector is that function.",
+    kv:"Mirrors the Decider's rules: no foreign events, event coverage, output containment. A projected field unused by any consumer is a finding (the mirror of state justification).",
+    df:["event","view"], to:["uistep","behavsim"]},
+  primitive:{c:"gray",t:"Named-algorithm primitive",s:"§3.5 — the Polanyi floor",
+    sec:"What",
+    d:"Genuinely irreducible computation (betweenness centrality, SHA-256, a checksum) that doesn't reduce to declared rules over a generic interpreter. Specified by reference + I/O contract + oracle, exempt from derivation, checked by oracle conformance.",
+    kv:"A computation is mechanically derivable exactly to the degree its variability is declared data over a generic interpreter. Push everything that can become declared data into a rule-set; name-and-bound only what truly cannot.",
+    df:["events"], to:["oracleconf"]},
+
+  /* ----- WHAT: UI ----- */
+  uistep:{c:"blue",t:"UI step",s:"§3.2.1 — the What of a screen",
+    sec:"What",
+    d:"A screen as pure meaning: the projection it surfaces, the commands it offers, its transitions, plus modelled meaning (emphasis, projection-state meanings, accessibility, content references). Derived from the model; symmetric to the Decider.",
+    kv:"Intent is permitted but is specification DEBT — a measured liability (the intent-reliance rate), not implementer licence. Anything intent was used to decide must be promoted into a modelled element.",
+    df:["projector","command"], to:["aio","accessibility","pagegraph","content","seam_screen"]},
+  aio:{c:"blue",t:"Abstract Interaction Object",s:"§3.2.2 — typed interaction",
+    sec:"What",
+    d:"A closed-core, extensible, context-independent vocabulary of interaction kinds (single-select, trigger-action, text-entry, display-value, navigate…). UI steps are typed AGAINST AIOs, never concrete controls — referencing a concrete control is a build-failing violation.",
+    kv:"This converts the What/How UI split from a discipline into a type boundary. Input AIOs derive their fields from the command payload, closing the form/data gap.",
+    df:["uistep"], to:["reify"]},
+  accessibility:{c:"blue",t:"Accessibility",s:"§3.2.3 — ingested WCAG criteria",
+    sec:"What",
+    d:"Not prose about what 'must be perceivable' but WCAG 2.2 success criteria ingested as entities, each tagged machine / assisted / manual. Most are inherited from a step's AIOs; a step may add screen-specific ones. The verdict reports a conformance level and its basis, never a bare pass.",
+    df:["uistep","aio"], to:["seam_screen"]},
+  pagegraph:{c:"blue",t:"Page graph",s:"§3.2.4 — navigation as one graph",
+    sec:"What",
+    d:"Application navigation as a single graph: pages are nodes, navigate transitions are edges. A flow is a named connected subgraph. Each system has a declared root whose out-edges are the global destinations — the burger/tab-bar/sidebar is just reified root navigation.",
+    kv:"'Top-level' is derived (an inbound edge from the root), not a hand-applied tag.",
+    df:["uistep","system"], to:["feature"]},
+  content:{c:"blue",t:"Content references",s:"§3.2.1 / §4.6 — words, by reference",
+    sec:"What",
+    d:"The standing authored words a screen carries (heading, body, empty/error prose, help, legal) — carried by content key with a declared role, never as literals. The fourth application of 'reference, don't inline': widgets→AIOs, styles→tokens, components→CIOs, copy→content references.",
+    kv:"Resolved by the How against a swappable content store: resolve(key, locale) → string. Locale is the content store's context dimension.",
+    df:["uistep"], to:["contentres"]},
+
+  /* ----- HOW ----- */
+  how:{c:"amber",t:"The How",s:"§4 — realising the What",
+    sec:"How",
+    d:"How the code expresses the What: decisions, principles, patterns, contracts, a repository layout model, and the seam contracts. Written against a settled What, never alongside an unsettled one. Owned by engineering.",
+    df:["domain","events","uistep"], to:["contracts","layout","reify","contentres","interfaces","buildseam"]},
+  contracts:{c:"amber",t:"Application & runtime contracts",s:"§4.2 — the first seam",
+    sec:"How",seam:true,
+    d:"Decision logic in a pure, isolable core (so it can be checked against the Decider) plus an infrastructure/runtime contract carrying the deployment identity — domain name, bundle ids, runtimes. The runtime satisfies the application contract; the satisfaction is recorded.",
+    kv:"System identity is What; deployment identity (the concrete address) is How. Architectural quality demands (residency, security) are verified here at build time.",
+    df:["how"], to:["quality"]},
+  layout:{c:"amber",t:"Repository layout model",s:"§4.3 — structure that verifies",
+    sec:"How",
+    d:"A glob-based model of where each kind of file legally lives and what spine a slice requires (its tests, its contracts). It both scaffolds generation and verifies the realised tree — layout conformance is the cheapest gate, run first.",
+    df:["how"], to:["layoutconf","workunit"]},
+  reify:{c:"amber",t:"Reification",s:"§4.5 — AIO → concrete control",
+    sec:"How",seam:true,
+    d:"reify(AIO, context) → CIO. Where phone→searchable-list / tablet→segmented-control / iOS→picker lives — a declared, rationale-carrying rule, not a choice buried in code. Must cover every (AIO, context) pair, or declare a pair unreifiable (a recorded gap, e.g. an image gallery in a TUI).",
+    kv:"A GUI design system reifies AIOs to visual components; a TUI one reifies the same AIOs to terminal widgets. Same §11 profile, different CIO catalog.",
+    df:["aio","iclass"], to:["seam_screen","designsys"]},
+  contentres:{c:"amber",t:"Content resolution",s:"§4.6 — words from a store",
+    sec:"How",
+    d:"The content store resolves resolve(key, locale) → string. Locale is its context dimension, exactly as form factor is the design system's. Same What, different words: a localized app is a coupling, not a fork.",
+    df:["content"], to:["contentstore","seam_screen"]},
+  interfaces:{c:"amber",t:"Interface standards",s:"§4.4 — generated, not written",
+    sec:"How",
+    d:"OpenAPI, AsyncAPI and the like, GENERATED from the domain model — never hand-written, so the published surface cannot drift from the meaning it serves.",
+    df:["how","domain"], to:[]},
+
+  /* ----- HOW: build seam ----- */
+  buildseam:{c:"amber",t:"The Build seam",s:"§5.1 — where spec ends, execution begins",
+    sec:"How",seam:true,
+    d:"The framework's third verified seam. A work unit is frozen and emitted; an executor returns a verdict. The framework fixes the CONTRACT that crosses it and nothing on the far side — scheduling, batching, how realisation is produced are the executor's concern. This makes the execution pillar pluggable.",
+    kv:"By value with a content-hash identity out; a self-describing verdict event in; the producer holds no knowledge of any consumer. The freeze is the decoupling.",
+    df:["workunit"], to:["workunit","verdict","spmc"]},
+  workunit:{c:"gray",t:"Work unit (SPMC bundle)",s:"§5 — specification's floor",
+    sec:"How",
+    d:"The smallest reproducible unit of realisation: a single bounded transformation, frozen input, one artifact, referencing the What/How by pointer. It IS an SPMC bundle.",
+    kv:"SPMC: Schema (the output shape) · Prompt (the transformation) · Model (the capability an executor matches) · Context (the frozen resolved input the reproducibility guarantee rests on).",
+    df:["layout"], to:["spmc","buildseam","trace"]},
+  spmc:{c:"gray",t:"SPMC",s:"§5 / §8 — the four axes",
+    sec:"How",
+    d:"Schema, Prompt, Model, Context — the structure of a work unit's frozen input, defined by the parent Two Pillars framework. The framework instantiates it (names the axes) without redefining it.",
+    df:["workunit"], to:["buildseam"]},
+  represent:{c:"gray",t:"Representation Contract",s:"parent · §2 / §9 — why it's a graph",
+    sec:"How",
+    d:"The parent Two Pillars obligations on the specification SUBSTRATE — what makes 'everything is one graph' a checkable requirement rather than prose. Abstract and technology-independent: RDF/SPARQL/SHACL is one conformant implementation, a property graph another. The framework's cornerstone, finally specified.",
+    kv:"A conformant substrate must give: addressable typed nodes/edges · traversable derivation edges · footprint, blast-radius and done COMPUTABLE over the graph · views as derived projections (never separately maintained) · full queryability. A pile of documents that merely describes a graph is not conformant. Defined by the parent; this framework instantiates it (§10 rule 1).",
+    df:[], to:["trace","donepred"]},
+  verdict:{c:"pink",t:"Verdict event",s:"§5.1 — the return path",
+    sec:"Verify",
+    d:"A self-describing event the executor emits to a stream: it echoes the unit's identity and lineage, carries the bundle-hash it ran against, and states a declared verdict (accepted / rejected / escalate). A consumer that never saw the dispatch can reconcile it from the event alone.",
+    kv:"Temporal decoupling: a verdict emitted at night is reconciled whenever a consumer next reads the stream. One opaque executor_extension slot carries stack-specific evidence.",
+    df:["buildseam"], to:[]},
+  trace:{c:"gray",t:"Rationale trace",s:"§5 — the explanation",
+    sec:"How",
+    d:"Each unit's output carries a trace to the decisions that produced it — the domain concept, the flow, the principle, the foundational decision. A trace must be TRUE: every principle a unit claims must be enforced by a passing verification, or the claim is retracted.",
+    df:["workunit"], to:[]},
+
+  /* ----- HOW: providers ----- */
+  designsys:{c:"amber",t:"Design system (provider)",s:"§11 — Preview profile",
+    sec:"How",
+    d:"The swappable provider of components behind a conformance profile: a CIO catalog, reification coverage over every (AIO, context), a token surface, per-component WCAG guarantees. A manifest declares them.",
+    df:["reify"], to:[]},
+  contentstore:{c:"amber",t:"Content store (provider)",s:"§12 — Preview profile",
+    sec:"How",
+    d:"The swappable provider of words, parallel to the design system: a keyed catalog with roles, locale coverage, role conformance. Content store : copy :: design system : components.",
+    df:["contentres"], to:[]},
+
+  /* ----- VERIFICATION ----- */
+  verify:{c:"pink",t:"Verification",s:"§6 — the conformance bar",
+    sec:"Verify",
+    d:"Frozen inputs; an oracle DERIVED from the model (not authored in the check); per-criterion findings; the verdict is the conjunction; no override-by-assertion. Verification is interleaved, not a final phase — and it's exactly as honest as the checks are strong.",
+    df:[], to:["behavsim","behavconf","layoutconf","seam_screen","dataconf","statejust","patternconf","oracleconf","runtimecheck"]},
+  behavsim:{c:"pink",t:"Behavioural simulation",s:"§6.3 — before any code",
+    sec:"Verify",
+    d:"A Decider or Projector, simulated against flow-derived scenarios, proven sound and complete BEFORE realisation — when defects are cheapest. The single highest-leverage habit in the process.",
+    df:["decider","projector"], to:[]},
+  behavconf:{c:"pink",t:"Behavioural conformance",s:"§6.3 — code matches the model",
+    sec:"Verify",
+    d:"Realised behaviour produces identical outputs to the Decider/Projector across the same scenarios. The simulated artifact becomes the oracle the code is checked against.",
+    df:["decider"], to:[]},
+  layoutconf:{c:"pink",t:"Layout conformance",s:"§6.3 — cheapest gate, first",
+    sec:"Verify",
+    d:"The realised repository tree matches the layout model's archetype. A by-construction check, run first among the realisation gates.",
+    df:["layout"], to:[]},
+  seam_screen:{c:"pink",t:"Seam verification",s:"§6.3 — screen ↔ UI step",
+    sec:"Verify",seam:true,
+    d:"The second seam: confirms a screen agrees with its UI step. Every datum displayed is projected; every control maps to a valid command; reification covers each context; every state is covered or waived; every content key resolves for each locale; accessibility obligations are discharged.",
+    df:["uistep","reify","contentres","accessibility"], to:[]},
+  dataconf:{c:"pink",t:"Data conformance",s:"§3.1 / §6.3 — reads both ways",
+    sec:"Verify",
+    d:"Production data validated against the declared shapes — continuously, in production. The first check whose failure is ambiguous BY DESIGN: data wrong, OR spec stale. Production data is a witness that can indict the specification.",
+    kv:"Authored once, asserted continuously. The data-divergence rate measures spec staleness — the over-confidence counterpart to intent-reliance. Adoptable standalone (§13): the framework's lowest-commitment entry point.",
+    df:["proddata","invariant","structure"], to:[]},
+  statejust:{c:"pink",t:"State & Decider justification",s:"§3.4 — model-gap detector",
+    sec:"Verify",
+    d:"Every aggregate field must be read by some Decider, and every projected field consumed by a UI step or report — an unread field is a finding (dead state, or an unmodelled invariant). Its mirror: every Decider must have a reachable rejection. Together, a pincer on unmodelled invariants.",
+    kv:"The behavioural-axis drift detector, peer to intent-reliance (UI) and data-divergence (data).",
+    df:["decider","projector"], to:[]},
+  patternconf:{c:"pink",t:"Pattern conformance",s:"§6.3 — well-formed slices",
+    sec:"Verify",
+    d:"Every behavioural slice is a well-formed instance of one of the four patterns: a command traces to a Trigger and produces ≥1 event; a View reads only declared events; an Automation's trigger carries no business logic; a Translation reads from exactly one source system.",
+    df:["patterns"], to:[]},
+  journeyconf:{c:"pink",t:"Journey conformance",s:"§6.3 — crossings are Translations",
+    sec:"Verify",
+    d:"Every crossing in a journey (§3.0.1) is a Translation — a journey that hops between systems any other way (a direct screen reference, a shared table, an assumed call) is a finding. Confirms the journey composes only existing flows and Translations and adds no new coupling, so the cross-system path is traversable for value-anchoring and blast-radius without the systems depending on each other.",
+    df:["journey","patterns"], to:[]},
+  oracleconf:{c:"pink",t:"Oracle conformance",s:"§6.3 — primitives",
+    sec:"Verify",
+    d:"A named-algorithm primitive matches its reference I/O oracle (e.g. the Damm checksum across its known pairs) — never behavioural simulation, because there is no fold to simulate.",
+    df:["primitive"], to:[]},
+  runtimecheck:{c:"pink",t:"Runtime-bound conformance",s:"§3.6 / §6.3 — vs telemetry",
+    sec:"Verify",
+    d:"A runtime quality demand (latency, throughput, capacity, uptime) holds when measured against production telemetry. The operational sibling of data conformance: continuous, bidirectional (the system underperforms OR the bound was unrealistic), with a divergence signal.",
+    df:["quality"], to:[]},
+
+  /* ----- DELIVERY ----- */
+  feature:{c:"purple",t:"Feature",s:"§7.1 — a subgraph of the event model",
+    sec:"Deliver",
+    d:"A reference to a subgraph of the event model (one or more flows). Its domain footprint is DERIVED by traversing the flows' change/target/project links — never hand-enumerated. Containment: feature ⊇ flow ⊇ slice (the atom / work unit). A feature contains slices; it is not itself one.",
+    df:["pagegraph","events"], to:["donepred","target"]},
+  donepred:{c:"purple",t:"'Done' as a predicate",s:"§7.2 — computed, not judged",
+    sec:"Deliver",
+    d:"A feature is done when every flow passes behavioural conformance, every concept in its derived footprint passes domain conformance, every verification citing its elements is green, and acceptance criteria pass. You don't decide done — the predicate says so. Progress is the fraction of in-scope elements passing.",
+    df:["feature","verify"], to:[]}
+};
+
+/* ----- layout: which nodes sit in which band/sub-band ----- */
+const LAYOUT = [
+  {sec:"What", k:"What", d:"the meaning — product, domain, behaviour, systems, UI", subs:[
+    {sh:"Product & systems", ids:["product","system","journey","platform","iclass","quality"]},
+    {sh:"Domain — structure & data (owns behaviour)", ids:["domain","structure","data","refdata","proddata","invariant"]},
+    {sh:"Event model — behaviour", ids:["events","trigger","command","event","view","patterns","decider","projector","primitive"]},
+    {sh:"UI", ids:["uistep","aio","accessibility","pagegraph","content"]}
+  ]},
+  {sec:"How", k:"How", d:"realising the What — contracts, reification, the Build seam", subs:[
+    {sh:"Realisation", ids:["how","contracts","layout","reify","contentres","interfaces"]},
+    {sh:"Providers", ids:["designsys","contentstore"]},
+    {sh:"Foundation & Build seam", ids:["represent","buildseam","workunit","spmc","trace","verdict"]}
+  ]},
+  {sec:"Verify", k:"Verify", d:"the conformance checks — derived oracles, no override by assertion", subs:[
+    {sh:"Checks", ids:["verify","behavsim","behavconf","layoutconf","seam_screen","dataconf","statejust","patternconf","journeyconf","oracleconf","runtimecheck"]}
+  ]},
+  {sec:"Deliver", k:"Deliver", d:"features, done, versions, direction", subs:[
+    {sh:"Delivery & time", ids:["feature","donepred","versions","target"]}
+  ]}
+];
+
+/* ---------- render ---------- */
+const canvas=document.getElementById('canvas');
+const legend=document.getElementById('legend');
+Object.entries(C).forEach(([k,v])=>{
+  const s=document.createElement('span');
+  s.innerHTML=`<span class="dot" style="background:var(--${k})"></span>${v}`;
+  legend.appendChild(s);
+});
+
+LAYOUT.forEach(band=>{
+  const b=document.createElement('div'); b.className='band';
+  b.innerHTML=`<div class="band-h"><span class="k">${band.k}</span><span class="d">${band.d}</span></div>`;
+  const rowWrap=document.createElement('div'); rowWrap.className='row';
+  band.subs.forEach(sub=>{
+    const sb=document.createElement('div'); sb.className='sub-band';
+    sb.innerHTML=`<div class="sh">${sub.sh}</div>`;
+    const r=document.createElement('div'); r.className='row';
+    sub.ids.forEach(id=>{
+      const n=N[id]; if(!n)return;
+      const btn=document.createElement('button');
+      btn.className='node'; btn.dataset.c=n.c; btn.dataset.id=id;
+      btn.innerHTML=`<span class="nt">${n.t}</span><span class="ns">${n.s}</span>`;
+      btn.onclick=()=>select(id);
+      r.appendChild(btn);
+    });
+    sb.appendChild(r); rowWrap.appendChild(sb);
+  });
+  b.appendChild(rowWrap); canvas.appendChild(b);
+});
+
+const panel=document.getElementById('panel');
+const empty=document.getElementById('empty');
+const detail=document.getElementById('detail');
+let cur=null;
+
+function select(id){
+  const n=N[id]; if(!n)return;
+  cur=id;
+  document.querySelectorAll('.node').forEach(e=>e.classList.toggle('sel',e.dataset.id===id));
+  empty.style.display='none'; detail.style.display='block';
+  const seam = n.seam ? `<span class="seam">⟂ seam — a boundary the framework defines but doesn't cross</span>` : '';
+  const kv = n.kv ? `<div class="lbl">key idea</div><p class="kv">${n.kv}</p>` : '';
+  const df = (n.df&&n.df.length) ? chips("derives from", n.df) : '';
+  const to = (n.to&&n.to.length) ? chips("connects to", n.to) : '';
+  detail.innerHTML =
+    `<div class="ph">${n.sec}</div>
+     <h2>${n.t}</h2>
+     <span class="tag">${n.s}</span><br>
+     ${seam}
+     <p>${n.d}</p>
+     ${kv}
+     ${df}${to}`;
+  panel.scrollTop=0;
+  if(window.matchMedia('(max-width:820px)').matches){
+    panel.scrollIntoView({behavior:'smooth',block:'nearest'});
+  }
+}
+function chips(label,ids){
+  const items=ids.filter(i=>N[i]).map(i=>
+    `<button class="chip" onclick="select('${i}')">${N[i].t}</button>`).join('');
+  return `<div class="lbl">${label}</div><div class="chips">${items}</div>`;
+}
+window.select=select;
+
+/* keyboard: esc clears */
+document.addEventListener('keydown',e=>{
+  if(e.key==='Escape'){cur=null;detail.style.display='none';empty.style.display='block';
+    document.querySelectorAll('.node').forEach(el=>el.classList.remove('sel'));}
+});
+</script>
+</body>
+</html>

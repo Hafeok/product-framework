@@ -6,6 +6,90 @@ and the specification aims to follow [Semantic Versioning](https://semver.org/)
 adapted for a standard: the MAJOR version increments on a change that can
 invalidate a previously-conformant instance.
 
+## [1.11.0] — 2026-07-11
+
+A minor release — **actors & access, blueprint & DeployableUnit, and the law as
+spine** — recovering the unlanded parts of a 1.7.0-era working draft (which had
+diverged before the contracts-tier adoption shipped as the actual 1.7.0). Only
+the parts still consistent with §§1.7.0–1.10.0 are landed; the draft's
+pre-contracts Build-seam envelope (`executor_extension`, Model as a bare
+capability label) is **superseded and deliberately not adopted**.
+
+### Added
+- **§3.7 Actors and access — who may do what, made checkable.** The Trigger's
+  source becomes a first-class **Actor** (kinds: user / system / developer) with
+  roles an access rule can read, under one principle: **access is a declared,
+  checkable relation between an actor and a capability, enforced where the
+  capability lives — never a permissions table beside the model.** Three layers
+  plus one: user→command **authorization is a Decider rejection keyed on the
+  actor** (inheriting simulation, Decider justification, and the whole
+  behavioural machinery); system→domain access is a **grant on the
+  `references_domain`/Translation edge**; developer→DeployableUnit access is a
+  **within-unit operational permission** (read data / change resources / read
+  config, secrets, logs — staging and production separable because they are
+  separate units); and the *act* of deploying is **§7.4 deploy permission** — a
+  developer→target grant in Delivery, because deploying is a process transition,
+  not access to a thing. **Authorization is What; authentication is How** (§4.2
+  binds, per actor kind, how identity and roles are established — OIDC, mTLS,
+  SSO); a rule keyed on a role no authentication can supply is a finding.
+- **Access conformance (§6.3)** — a new verification kind: every declared access
+  enforced where its capability lives, every enforcement point tracing back to a
+  declared access. Binds only where §3.7 elements are declared.
+- **Blueprint and DeployableUnit (§4).** The reusable How gets its proper pair:
+  a **blueprint** (the template — renaming *archetype*) is **instantiated** as
+  **DeployableUnits** — the concrete deployed artifacts (DORA's unit of
+  delivery measurement), one per system per environment, carrying the
+  infrastructure/runtime contract and deployment identity of §4.2. Mapping
+  1:1:1 in the common case, declared when it fans out. System identity is What;
+  a DeployableUnit is How.
+- **§8.2 The Law of Conservation of Specification Demand — the framework's
+  theoretical spine.** The formal citation of the law (defined in
+  Decision-Driven Design, cited not restated), the machinery-to-store mapping,
+  and the entailments — "never prose, always checkable" as escape-minimisation,
+  "declared once, derived many" as the no-double-counting clause, the four
+  drift signals as escape detectors, the pincer as escaped→encoded conversion,
+  the funnel as the positional projection, every published seam as encoded seam
+  demand (§5.3). Carries a **two-claim status note**: the *store-mapping is
+  reported* (exercised in `product-cli` — decisions typed by store, allocation
+  computed, escape detectors run against real specs); *conservation itself
+  remains projected* (a constant total is a clean derivation, not yet a
+  longitudinal measurement). §2.2 and §5.3 (added in 1.10.0) now point here for
+  the formal mapping; the header blurb names the law up front.
+- **§4.5 — the far side of reification may be its own framework.** When
+  reification is delegated rather than performed inside the How, the boundary is
+  the **Reification Contract** owned by the sibling Interface Framework (Loom as
+  its behavioural core, consistent with the 1.9.1 ownership fix): a **UIIntent**
+  crosses by value, a self-describing **ReificationReport** returns, and the
+  screen-seam verification becomes a verdict over that report. The interface
+  twin of the Build seam — one more entry on the §5.3 seam ledger.
+- **New derivation links (§9):** `instantiated_as` / `deploys_system` /
+  `built_from` / `carries_identity` (blueprint & unit) and `initiated_by` /
+  `has_role` / `authorizes` / `grants` / `accesses` / `may_promote` /
+  `authenticated_via` (actors & access).
+- **`preview/graph.html`** — the recovered interactive concept map of the
+  specification graph (self-contained, no external resources), stamped with its
+  v1.6.0 vocabulary vintage; concepts added since are noted as not yet drawn.
+- **Worked example:** the checkout gains the staff-only refund as a
+  `NOT-AUTHORIZED` rejection keyed on the actor (same Decider, same simulation),
+  the grant/permission/deploy-target table, the blueprint→DeployableUnit fan-out
+  for both systems, and an access-conformance row.
+
+### Changed
+- **"Archetype" → "blueprint"** throughout (spec §§1, 4, 4.2, 4.3, 10; README;
+  CONTRIBUTING; the example) — a §7.3 naming-level change paired with the new
+  DeployableUnit concept it was renamed to sit beside.
+- **§7.4 "Model, not practice" renumbered to §7.5**; §7.4 is now deploy
+  permission. Rule 5 (§10) extends with the access fabric; the §8 mapping table
+  gains the Actors & access and Law rows and the blueprint/DeployableUnit
+  wording; `CONFORMANCE.md`'s Actors row now cites §3.7.
+
+### Compatibility
+- **Additive.** v1.10.0 graphs remain valid v1.11.0 graphs. Actors, access
+  declarations, blueprints, and DeployableUnits are new optional node/link
+  kinds; **access conformance binds only where access is declared**, so an
+  instance declaring no actors is unaffected. The rename is naming-level; the
+  §7.4→§7.5 renumber changes one internal anchor with no external references.
+
 ## [1.10.0] — 2026-07-11
 
 A minor release — **the allocation reading and the seam ledger**. It catches the
