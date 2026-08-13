@@ -104,6 +104,7 @@ be true; this is where to start (see [§13](docs/product-framework.md#13-data-co
 | Path | Contents |
 |---|---|
 | [`docs/product-framework.md`](docs/product-framework.md) | The specification (normative §§1–10; Preview §§11–14). |
+| [`docs/revision-decisions-as-unit.md`](docs/revision-decisions-as-unit.md) | **⛔ Not canon.** An unruled revision proposal ("decisions as the unit across all phases"), filed for the maintainer's ruling. Not spec, not Preview; the specification governs wherever they differ. |
 | [`GUIDE.md`](GUIDE.md) | A non-normative developer workflow — the everyday Intake → What → How → Build loop. |
 | [`authoring-scope/`](authoring-scope/) | The authoring-scope package (§14): JSON Schema, both oracles (enforcement + completeness join, `--self-test`), a Figma reference scope, and the contract doc. |
 | [`examples/checkout/`](examples/checkout/) | A worked example — a complete What carried down the whole chain, doubling as the spec's conformance demonstration. |
