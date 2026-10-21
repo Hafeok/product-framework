@@ -6,6 +6,67 @@ and the specification aims to follow [Semantic Versioning](https://semver.org/)
 adapted for a standard: the MAJOR version increments on a change that can
 invalidate a previously-conformant instance.
 
+## [1.11.0] — 2026-10-21
+
+A minor release — **actors and authorization**. The framework could not say who
+may act in the product being specified, so authorization was decided in the
+realisation by whoever wrote the middleware. §3.7 makes the product's own
+authorization part of the What, split by the framework's existing test: if two
+systems must agree, it is domain-level. Authentication stays How. The framework
+defines the actor shape and the checks and ships no actor kinds or roles.
+
+### Added
+- **§3.7 Actors and authorization.** An **actor kind** (domain-level) has a
+  closed **nature** (`human` / `process` / `external`) and typed claims, encoded
+  as `has_field` like a payload field. A claim may be set-valued and may draw its
+  values from reference data (§3.1). **Two authorities, never one:** the
+  product's authorization (who may act *in* the product) is kept apart from
+  authority *over* the specification (who may sign a decision about it), which
+  belongs to governance tooling, never to `pf:`. A §3.7 actor is also distinct
+  from the actor that realises a work unit (§5).
+- **Surface authorization** (system-level): a UI step is **offered to** human
+  actor kinds.
+- **Read-side authorization** (domain-level): a View is **public**, or **scoped**
+  by one rule per actor kind over its claims. A rule with no keys is a declared
+  "every row"; an actor kind with no rule sees nothing.
+- **§6.3 Actor conformance**, four checks: **actor coverage** (the twin of
+  command coverage), **scope coverage** (at the seam), **claim justification**
+  (the twin of state justification), and **provider coverage**. The checks bind
+  only once a What declares an actor kind.
+- **§9** links `acts_as`, `offered_to`, `values_from`, `scoped_by`,
+  `for_actor`, `keyed_by` and `authenticated_by`. §14.2 gains the `actor-kind`
+  kind.
+- **`preview/conformance/`**: an optional `actor` (`{ kind, claims }`) on the
+  decision request, and an optional `key` on the projection request.
+
+### Changed
+- **§3.2.0** The Trigger's three-valued source stays: it is the channel the
+  patterns are checked by. A trigger now also **acts as** an actor kind whose
+  nature the source admits (`user` → human, `automated` → process, `external` →
+  external).
+- **§3.3** `decide(state, command, actor)`. The actor is supplied by the system's
+  authentication, never by the caller, so it is a declared input and not a
+  payload field. A Decider's **actor alphabet** is derived from the actor kinds
+  its commands are offered to or issued as. Scenarios name the actor in their
+  *when*. The wire scalar alphabet admits one list-valued position: a set-valued
+  claim, confined to the actor block.
+- **§3.4** The fold takes no actor; one fold serves every actor and the scope
+  selects at the seam. A cross-row aggregate is handled by a **keyed** fold
+  (`keyed_by`), not a per-actor one.
+- **§4.2** The infrastructure/runtime contract declares **`authenticated_by`**
+  per deployment: an identity provider and a claim mapping for each actor kind.
+- **§4.4** The actor is never part of a generated request schema. Each operation
+  carries an `openIdConnect` security requirement per actor kind it is offered
+  to.
+- **§6.3.1, §8, §8.1, and rules 4 and 5 of §10** amended to match.
+
+### Compatibility
+- **Additive.** A v1.10.0 graph is a valid v1.11.0 graph, and one that declares
+  no actor kind is judged exactly as before. Its authorization is *unstated*, and
+  a Level 1 claim says whether the What models actors.
+- The conformance-wire changes are optional fields. A decision request without
+  `actor` stays conformant for a Decider whose actor alphabet is empty.
+
 ## [1.10.0] — 2026-07-11
 
 A minor release — **the allocation reading and the seam ledger**. It catches the

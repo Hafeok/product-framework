@@ -63,7 +63,7 @@ the event-model blocks `trigger` / `command` / `event` / `view` (§3.2.0), `deci
 and `projector` (§3.3–3.4), `ui-step` and `aio` (§3.2.1–3.2.2), `state-annotation`
 (the authored per-state meanings and waivers, §3.2.1), `page-graph`,
 `context-of-use`, `accessibility-criteria` (§3.2.3), `content-reference` (§3.2.1),
-`journey` (§3.0.1), `quality-demand` (§3.6), `data-shape` (§13), … A scope is a
+`journey` (§3.0.1), `quality-demand` (§3.6), `actor-kind` (§3.7), `data-shape` (§13), … A scope is a
 subset over kinds the framework already names; this contract introduces no ontology
 of its own. Note one asymmetry the vocabulary carries: some kinds are **derived,
 not authored** — a read model's `state-space` derives from the projection's shape
